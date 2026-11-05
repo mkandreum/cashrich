@@ -55,7 +55,7 @@ export function FreedomMeter({ player }: { player: PlayerView }) {
         </span>
         <span>Meta {money(player.goal)}</span>
       </div>
-      <div className="meter-track" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Camino a la libertad">
+      <div className="meter-track" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Camino a vivir de tus rentas">
         <motion.div className="meter-fill" initial={false} animate={{ width: `${Math.max(pct, 3)}%` }} transition={{ type: 'spring', stiffness: 90, damping: 16 }} />
       </div>
     </div>
@@ -93,7 +93,7 @@ export function PlayerHud({ player, room }: { player: PlayerView; room: Snapshot
 
 function Status({ player }: { player: PlayerView }) {
   if (player.bankrupt) return <Skull size={16} className="text-coral" aria-label="En bancarrota" />;
-  if (player.escaped) return <Rocket size={16} className="text-gold" aria-label="En la vía rápida" />;
+  if (player.escaped) return <Rocket size={16} className="text-gold" aria-label="En la Avenida del Legado" />;
   return null;
 }
 

@@ -6,11 +6,11 @@ import { Logo } from '../components/Logo';
 import { navigate } from '../App';
 
 const STEPS = [
-  ['💼', 'Empiezas atrapado', 'Te toca una profesión con sueldo y gastos. Vives al día, en la ratonera.'],
+  ['💼', 'Empiezas atrapado', 'Te toca una profesión con sueldo y gastos. Vives al día, en el barrio.'],
   ['📈', 'Opera con cabeza', 'Compra en la recesión, vende en la burbuja. Los precios y el crédito cambian con la economía.'],
   ['🔨', 'Subasta y pelea', 'Si pasas de una oferta sale a subasta entre rivales, y tú te quedas la prima.'],
-  ['🔓', 'Escapa', 'Cuando tus rentas cubren tus gastos, saltas a la vía rápida.'],
-  ['⭐', 'Compra tu sueño', 'El primero en pagarse su sueño gana. Cuidado con los gustos y las deudas.'],
+  ['🔓', 'Escapa', 'Cuando tus rentas cubren tus gastos, saltas a la Avenida del Legado.'],
+  ['⭐', 'Compra tu Legado', 'El primero en pagarse su Legado gana. Cuidado con los caprichos y las deudas.'],
 ];
 
 export function Landing() {
@@ -43,7 +43,7 @@ export function Landing() {
         <Logo className="text-center text-[clamp(3.6rem,15vw,8.5rem)]" />
       </div>
       <p className="mt-4 max-w-xl text-center text-xl font-medium leading-snug text-cream">
-        Escapa de la ratonera, haz que tu dinero trabaje y compra tu sueño antes que tus amigos.
+        Sal del barrio, haz que tu dinero trabaje y compra tu Legado antes que tus amigos.
       </p>
       <p className="mt-1 text-center font-semibold text-gold">Online · 2 a 6 jugadores · cada uno desde su móvil</p>
 

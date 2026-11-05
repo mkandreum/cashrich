@@ -303,3 +303,11 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .shine, .float-slow, .die-idle { animation: none; }
 }
+
+/* Ficha del modo aula: al imprimir solo sale el informe */
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; color: #000; }
+  .print-area { position: absolute; inset: 0 0 auto; background: #fff; box-shadow: none; border: 0; }
+  .no-print { display: none !important; }
+}

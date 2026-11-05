@@ -17,6 +17,7 @@ import { isMuted, setMuted, sfx } from '../lib/sound';
 import { music, musicEnabled, setMusicEnabled, type Mood } from '../lib/music';
 import { Lobby } from './Lobby';
 import { Avatar, Glyph } from '../components/Avatar';
+import { LeaderboardPanel, Report } from '../components/Report';
 
 const Board3D = lazy(() => import('../components/Board3D'));
 const webgl = (() => {
@@ -96,7 +97,7 @@ function useGameFx(room: Snapshot | null, meId?: string) {
       if (p.escaped && was && !was.escaped) {
         sfx.fanfare();
         throwConfetti();
-        show({ emoji: 'unlock', title: `¡${p.name} escapó!`, text: 'Sus rentas ya pagan su vida. Rumbo a la vía rápida.' });
+        show({ emoji: 'unlock', title: `¡${p.name} escapó!`, text: 'Sus rentas ya pagan su vida. Rumbo a la Avenida del Legado.' });
       }
       if (p.bankrupt && was && !was.bankrupt) {
         sfx.loss();
@@ -108,6 +109,15 @@ function useGameFx(room: Snapshot | null, meId?: string) {
     if (turnMoved && room.phase === 'playing' && room.players[room.turn]?.id === meId) {
       sfx.turn();
       show({ emoji: mine?.avatar ?? 'dice', title: '¡Te toca!' });
+    }
+    if (before.round !== room.round && room.settings.rounds > 0 && room.round === room.settings.rounds && room.phase === 'playing') {
+      sfx.turn();
+      show({ emoji: 'dice', title: '¡Última ronda!', text: 'Vende, compra o negocia: al acabar se decide quién gana.' });
+    }
+    const newOffer = room.offers.find((o) => o.toId === meId && !before.offers.some((x) => x.id === o.id));
+    if (newOffer) {
+      sfx.card();
+      show({ emoji: room.players.find((p) => p.id === newOffer.fromId)?.avatar ?? 'dice', title: '¡Te proponen un trato!', text: 'Míralo en tu cartera.' });
     }
     if (before.phase !== 'over' && room.phase === 'over') {
       sfx.fanfare();
@@ -146,9 +156,11 @@ function BannerOverlay({ banner }: { banner: Banner | null }) {
   );
 }
 
-function Victory({ room, isHost, tv, send }: { room: Snapshot; isHost: boolean; tv: boolean; send: (type: string) => void }) {
+function Victory({ room, isHost, tv, send, meId }: { room: Snapshot; isHost: boolean; tv: boolean; send: (type: string) => void; meId?: string }) {
+  const byProgress = room.settings.mode !== 'clasico';
+  const entry = room.report?.find((r) => r.id === meId);
   const winner = room.players.find((p) => p.id === room.winner);
-  const ranking = [...room.players].sort((a, b) => Number(b.id === room.winner) - Number(a.id === room.winner) || b.netWorth - a.netWorth);
+  const ranking = [...room.players].sort((a, b) => Number(b.id === room.winner) - Number(a.id === room.winner) || (byProgress ? b.progress - a.progress : b.netWorth - a.netWorth));
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`fixed inset-0 z-30 grid place-items-center bg-felt-950/85 p-4 ${tv ? 'overflow-hidden' : 'overflow-auto'}`}>
       <motion.div initial={{ scale: 0.6, y: 40 }} animate={{ scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 14 }} className="w-full max-w-md text-center">
@@ -161,10 +173,12 @@ function Victory({ room, isHost, tv, send }: { room: Snapshot; isHost: boolean; 
               <span className="font-display w-6 text-center">{i + 1}</span>
               <span aria-hidden className="text-xl"><Avatar id={p.avatar} /></span>
               <span className="min-w-0 flex-1 truncate font-semibold">{p.name}</span>
-              <span className="font-display text-mint-dark">{money(p.netWorth)}</span>
+              <span className="font-display text-mint-dark">{byProgress ? `${p.progress >= 0 ? '+' : ''}${p.progress} meses` : money(p.netWorth)}</span>
             </li>
           ))}
         </ol>
+        {entry && !tv && <Report room={room} entry={entry} />}
+        <LeaderboardPanel room={room} />
         {isHost
           ? <button className="btn btn-coral btn-giant mt-4" onClick={() => send('reset')}>Otra partida</button>
           : <p className="mt-4 font-semibold text-cream/85">El admin puede empezar otra partida.</p>}
@@ -182,6 +196,7 @@ function TopBar({ room, online, isHost, canSkip, send, boardToggle }: { room: Sn
     <div className="flex items-center gap-2">
       <Logo className="flex-1 text-2xl" />
       {!online && <span className="inline-flex items-center gap-1 rounded-full bg-coral px-2 py-1 text-xs font-semibold"><WifiOff size={14} aria-hidden /> Reconectando</span>}
+      {room.settings.rounds > 0 && <span title="Ronda" className="rounded-lg bg-black/25 px-2 py-1 font-display">{Math.min(room.round, room.settings.rounds)}/{room.settings.rounds}</span>}
       <span className="rounded-lg bg-black/25 px-2 py-1 font-display tracking-wider">{room.code}</span>
       {isHost && canSkip && (
         <button
@@ -351,7 +366,7 @@ export function Game({ code }: { code: string }) {
     <>
       <BannerOverlay banner={banner} />
       <Toast text={toast} />
-      {shown.phase === 'over' && !mv && <Victory room={shown} isHost={isHost} tv={tv} send={send} />}
+      {shown.phase === 'over' && !mv && <Victory room={shown} isHost={isHost} tv={tv} send={send} meId={me?.id} />}
     </>
   );
   if (tv) return <TvScreen room={shown} motion={mv} online={online} overlays={overlays} />;
@@ -406,7 +421,7 @@ export function Game({ code }: { code: string }) {
             value={tab} onChange={setTab}
             tabs={[
               { id: 'play', label: 'Jugar', icon: <Dices size={18} aria-hidden />, alert: myTurn && tab !== 'play' },
-              { id: 'wallet', label: 'Cartera', icon: <WalletCards size={18} aria-hidden /> },
+              { id: 'wallet', label: 'Cartera', icon: <WalletCards size={18} aria-hidden />, alert: tab !== 'wallet' && shown.offers.some((o) => o.toId === me.id) },
               { id: 'table', label: 'Mesa', icon: <Users size={18} aria-hidden /> },
             ]}
           />

@@ -310,7 +310,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
             if (p.escaped && !was.escaped) {
                 Sfx.fanfare(); Music.duck(1800)
                 confetti++
-                popBanner("unlock", "¡${p.name} escapó!", "Sus rentas ya pagan su vida. Rumbo a la vía rápida.")
+                popBanner("unlock", "¡${p.name} escapó!", "Sus rentas ya pagan su vida. Rumbo a la Avenida del Legado.")
             }
             if (p.bankrupt && !was.bankrupt) {
                 Sfx.loss()
@@ -328,6 +328,15 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
                 Sfx.turn(); Music.duck(800)
                 popBanner(current.avatar, "Turno de ${current.name}")
             }
+        }
+        if (before.round != room.round && room.settings.rounds > 0 && room.round == room.settings.rounds && room.phase == "playing") {
+            Sfx.turn(); Music.duck(800)
+            popBanner("dice", "¡Última ronda!", "Vende, compra o negocia: al acabar se decide quién gana.")
+        }
+        val newOffer = room.offers.find { o -> o.toId == meId && before.offers.none { it.id == o.id } }
+        if (newOffer != null) {
+            Sfx.card(); Music.duck(900)
+            popBanner(room.players.find { it.id == newOffer.fromId }?.avatar ?: "dice", "¡Te proponen un trato!", "Míralo en tu cartera.")
         }
         if (before.phase != "over" && room.phase == "over") {
             Sfx.fanfare(); Music.duck(1800)

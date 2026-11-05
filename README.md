@@ -61,6 +61,9 @@ El primero en entrar a la mesa es el **admin**: elige dificultad y duración, em
 
 Además de las reglas del juego de mesa:
 
+- **Modos.** Exprés (por defecto: unos 30 min, 12 rondas, gana quien más progresa respecto a su sueldo), Clásico (la partida larga), Reto semanal (mismo azar para todas las mesas, con clasificación; se puede jugar solo) y Aula (rentabilidad de cada oferta a la vista y ficha de reflexión imprimible).
+- **Tratos.** En cualquier momento, también fuera de tu turno: vender o comprar activos a otro jugador y prestarse dinero con interés. La hipoteca va con el activo.
+- **Informe final.** Evolución del patrimonio, mejor y peor operación, rentas, intereses, gastos y una lección según cómo jugaste.
 - **Economía viva.** Expansión, burbuja, recesión y recuperación se suceden. Mueven el precio de inmuebles, bolsa y negocios, las rentas y el tipo de interés.
 - **Precios variables.** Cada oferta cuesta según esté su sector, pero su renta no cambia: en recesión todo renta más por lo que pagas.
 - **Apalancamiento.** Al vender cobras el valor de mercado menos la hipoteca. En una crisis puedes tener que poner dinero para deshacerte de un activo.
@@ -88,6 +91,7 @@ cd web
 npm install
 npm run dev      # servidor y cliente con recarga
 npm test         # reglas del juego
+npx tsx tools/simulate.ts 1000 4   # mide duración y equilibrio; solo es una herramienta, el juego no tiene bots
 ```
 
 ```

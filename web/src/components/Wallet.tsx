@@ -2,6 +2,7 @@ import { ArrowUpCircle, BadgeDollarSign } from 'lucide-react';
 import { money, type PlayerView, type Snapshot } from '../lib/api';
 import { EconomyPanel } from './Economy';
 import { tagIcon } from '../lib/theme';
+import { Trades } from './Trades';
 
 export function Wallet({ room, me, send }: { room: Snapshot; me: PlayerView; send: (type: string, payload?: unknown) => void }) {
   const myTurn = room.phase === 'playing' && room.players[room.turn]?.id === me.id;
@@ -20,7 +21,7 @@ export function Wallet({ room, me, send }: { room: Snapshot; me: PlayerView; sen
             {me.synergies.map((s) => <span key={s} className="rounded-full bg-gold px-2 py-0.5 text-xs font-semibold">★ {s}</span>)}
           </div>
         )}
-        {me.assets.length === 0 && <p className="mt-1 text-sm text-ink/70">Aún no tienes nada que te pague. Esa es la misión: compra activos en las casillas de oportunidad.</p>}
+        {me.assets.length === 0 && <p className="mt-1 text-sm text-ink/70">Aún no tienes nada que te pague. Esa es la misión: compra activos en las casillas de Ganga y Gran proyecto.</p>}
         <ul className="mt-1.5 space-y-1.5">
           {me.assets.map((a) => {
             const Icon = tagIcon(a.tag);
@@ -50,6 +51,8 @@ export function Wallet({ room, me, send }: { room: Snapshot; me: PlayerView; sen
         </ul>
       </section>
 
+      <Trades room={room} me={me} send={send} />
+
       <section className="panel p-3">
         <h3 className="font-display text-lg">Banco</h3>
         <p className="text-sm text-ink/70">
@@ -69,7 +72,7 @@ export function Wallet({ room, me, send }: { room: Snapshot; me: PlayerView; sen
             {me.debts.map((d) => (
               <li key={d.id} className="flex items-center gap-2 rounded-xl bg-coral/15 px-2.5 py-1.5">
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold leading-tight">Deuda de {money(d.balance)}</p>
+                  <p className="font-semibold leading-tight">Deuda de {money(d.balance)}{d.creditor ? ` con ${d.creditor}` : ''}</p>
                   <p className="text-xs text-ink/65">Al {d.rate}%: pagas {money(d.payment)}/mes</p>
                 </div>
                 <button className="btn btn-small btn-mint" disabled={!myTurn || me.cash < d.balance} onClick={() => send('repay', { debtId: d.id })}>Liquidar</button>

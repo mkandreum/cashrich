@@ -48,16 +48,16 @@ data class Look(val tile: Color, val dark: Color, val ink: Color, val icon: Imag
 
 private val INK2 = Color(0xFF10143A)
 object Looks {
-    val cobrar by lazy { Look(C.Gold, C.GoldDark, C.Ink, Lucide.Coins, "Cobra") }
-    val peq by lazy { Look(C.Sky, C.SkyDark, INK2, Lucide.TrendingUp, "Pequeña") }
-    val grande by lazy { Look(C.Coral, C.CoralDark, Color.White, Lucide.Rocket, "Grande") }
-    val mercado by lazy { Look(Color(0xFF8B5CF6), Color(0xFF5B30B8), Color.White, Lucide.ArrowLeftRight, "Mercado") }
-    val gusto by lazy { Look(Color(0xFFFF6FB5), Color(0xFFC23A80), C.Ink, Lucide.ShoppingBag, "Gusto") }
+    val cobrar by lazy { Look(C.Gold, C.GoldDark, C.Ink, Lucide.Coins, "Nómina") }
+    val peq by lazy { Look(C.Sky, C.SkyDark, INK2, Lucide.TrendingUp, "Ganga") }
+    val grande by lazy { Look(C.Coral, C.CoralDark, Color.White, Lucide.Rocket, "Gran proyecto") }
+    val mercado by lazy { Look(Color(0xFF8B5CF6), Color(0xFF5B30B8), Color.White, Lucide.ArrowLeftRight, "Noticias") }
+    val gusto by lazy { Look(Color(0xFFFF6FB5), Color(0xFFC23A80), C.Ink, Lucide.ShoppingBag, "Capricho") }
     val banco by lazy { Look(Color(0xFF7C8BD6), Color(0xFF4553A3), INK2, Lucide.Landmark, "Banco") }
-    val sueno by lazy { Look(Color(0xFFFFF0A8), C.GoldDark, C.Ink, Lucide.Star, "Sueño") }
+    val sueno by lazy { Look(Color(0xFFFFF0A8), C.GoldDark, C.Ink, Lucide.Star, "Legado") }
     val salida by lazy { Look(C.Mint, C.MintDark, INK2, Lucide.Flag, "Salida") }
-    val auditoria by lazy { Look(Color(0xFF7C8BD6), Color(0xFF4553A3), INK2, Lucide.Scale, "Auditoría") }
-    val oportunidad by lazy { Look(C.Coral, C.CoralDark, Color.White, Lucide.Rocket, "Oportunidad") }
+    val auditoria by lazy { Look(Color(0xFF7C8BD6), Color(0xFF4553A3), INK2, Lucide.Scale, "Inspección") }
+    val oportunidad by lazy { Look(C.Coral, C.CoralDark, Color.White, Lucide.Rocket, "Proyecto") }
     val impuesto by lazy { Look(Color(0xFF9AA3B5), Color(0xFF5E6779), INK2, Lucide.Receipt, "Hacienda") }
     val formacion by lazy { Look(Color(0xFF4FD1C5), Color(0xFF23958B), INK2, Lucide.GraduationCap, "Formación") }
     val imprevisto by lazy { Look(Color(0xFFFF9F43), Color(0xFFC46A12), C.Ink, Lucide.TriangleAlert, "Imprevisto") }
@@ -79,12 +79,12 @@ object Looks {
     }
 
     fun forDeck(deck: String?): Pair<Look, String> = when (deck) {
-        "small" -> peq to "Oportunidad pequeña"
-        "big" -> grande to "Oportunidad grande"
-        "gusto" -> gusto to "Gusto"
-        "dream" -> sueno to "Sueño"
+        "small" -> peq to "Ganga"
+        "big" -> grande to "Gran proyecto"
+        "gusto" -> gusto to "Capricho"
+        "dream" -> sueno to "Legado"
         "bank" -> banco to "Banco y caridad"
-        else -> mercado to "Mercado"
+        else -> mercado to "Noticias"
     }
 
     fun tagIcon(tag: String?): ImageVector = when (tag) {

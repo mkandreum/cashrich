@@ -141,8 +141,8 @@ describe('Economía y operaciones', () => {
     const engine = createEngine(newGame('TEST'));
     const admin = engine.join('A', '') as Creds;
     engine.join('B', '');
-    expect(engine.act(admin, 'settings', { difficulty: 'dificil', rounds: 20 })).toEqual({});
-    expect(engine.state.settings).toEqual({ difficulty: 'dificil', rounds: 20 });
+    expect(engine.act(admin, 'settings', { difficulty: 'dificil', rounds: 20, mode: 'expres' })).toEqual({});
+    expect(engine.state.settings).toEqual({ difficulty: 'dificil', rounds: 20, mode: 'expres' });
     engine.act(admin, 'start');
     expect(engine.act(admin, 'settings', { difficulty: 'facil' }).error).toBeTruthy();
     expect(engine.state.players[0].cash).toBeGreaterThan(0);
@@ -243,5 +243,115 @@ describe('FLUJO LIBRE', () => {
     expect(a.bankrupt).toBe(true);
     expect(S.phase).toBe('over');
     expect(S.winner).toBe(b.id);
+  });
+});
+
+describe('Modos, tratos e informe', () => {
+  const giveAsset = (engine: Engine, id: string) => {
+    const p = engine.state.players.find((x) => x.id === id)!;
+    p.assets.push({ id: 'A1', name: 'Piso', tag: 'VIVIENDA', cost: 100000, baseCost: 100000, down: 20000, mortgage: 80000, flow: 1000, kind: 'big', upgraded: false });
+    p.ledger.push({ assetId: 'A1', name: 'Piso', round: 1, paid: 20000, received: 0, rent: 0, open: true });
+    return p;
+  };
+
+  it('la partida nueva es Exprés de 12 rondas', () => {
+    const { engine } = table(2);
+    expect(engine.state.settings).toMatchObject({ mode: 'expres', rounds: 12 });
+  });
+
+  it('vender un activo a otro jugador mueve dinero, activo y rentas, fuera de turno', () => {
+    const { engine, creds } = table(3);
+    const S = engine.state;
+    const seller = giveAsset(engine, S.players[(S.turn + 1) % 3].id);
+    const buyer = S.players[(S.turn + 2) % 3];
+    buyer.cash = 50000; seller.cash = 0;
+    expect(engine.act(creds[seller.id], 'offer', { kind: 'sell', toId: buyer.id, assetId: 'A1', amount: 30000 })).toEqual({});
+    expect(engine.act(creds[buyer.id], 'acceptOffer', { offerId: S.offers[0].id })).toEqual({});
+    expect(seller.cash).toBe(30000);
+    expect(buyer.cash).toBe(20000);
+    expect(seller.assets).toHaveLength(0);
+    expect(buyer.assets[0].mortgage).toBe(80000);
+    expect(buyer.passive).toBeGreaterThan(0);
+    expect(S.offers).toHaveLength(0);
+  });
+
+  it('no se puede aceptar una oferta ajena ni sin efectivo', () => {
+    const { engine, creds } = table(3);
+    const S = engine.state;
+    const [a, b, c] = S.players;
+    a.cash = 1000;
+    expect(engine.act(creds[a.id], 'offer', { kind: 'lend', toId: b.id, amount: 5000, rate: 5 }).error).toBeTruthy();
+    a.cash = 5000;
+    engine.act(creds[a.id], 'offer', { kind: 'lend', toId: b.id, amount: 5000, rate: 5 });
+    const id = S.offers[0].id;
+    expect(engine.act(creds[c.id], 'acceptOffer', { offerId: id }).error).toBeTruthy();
+    a.cash = 0;
+    expect(engine.act(creds[b.id], 'acceptOffer', { offerId: id }).error).toBeTruthy();
+    expect(S.offers).toHaveLength(0);
+  });
+
+  it('un préstamo entre jugadores cobra cuota cada mes y devuelve el capital al prestamista', () => {
+    const { engine, creds } = table(2);
+    const S = engine.state;
+    const borrower = S.players[S.turn];
+    const lender = S.players[(S.turn + 1) % 2];
+    lender.cash = 10000; borrower.cash = 0;
+    const before = borrower.expenses;
+    engine.act(creds[lender.id], 'offer', { kind: 'lend', toId: borrower.id, amount: 10000, rate: 10 });
+    engine.act(creds[borrower.id], 'acceptOffer', { offerId: S.offers[0].id });
+    expect(borrower.expenses).toBe(before + 1000);
+    const debt = borrower.debts[0];
+    expect(debt.creditorId).toBe(lender.id);
+    lender.cash = 0;
+    borrower.cash = 10000;
+    expect(engine.act(creds[borrower.id], 'repay', { debtId: debt.id })).toEqual({});
+    expect(lender.cash).toBe(10000);
+    expect(borrower.expenses).toBe(before);
+  });
+
+  it('el informe final da la mejor y la peor operación', () => {
+    const { engine, creds } = table(2);
+    const S = engine.state;
+    const p = giveAsset(engine, S.players[0].id);
+    p.ledger.push({ assetId: 'B', name: 'Mala', round: 2, paid: 9000, received: 1000, rent: 0, open: false });
+    S.players[1].cash = -1;
+    S.phase = 'over';
+    const report = engine.snapshot().report!.find((r) => r.id === p.id)!;
+    expect(report.worst?.name).toBe('Mala');
+    expect(report.worst?.gain).toBe(-8000);
+    expect(report.best?.name).toBe('Piso');
+    expect(creds).toBeTruthy();
+  });
+
+  it('el reto da el mismo azar a todas las mesas, deja jugar solo y guarda la marca', () => {
+    const added: unknown[] = [];
+    const board = { top: () => [], add: (_w: string, e: unknown[]) => { added.push(...e); } };
+    const seat = () => {
+      const engine = createEngine(newGame('RETO'), board);
+      const me = engine.join('Ana', '') as Creds;
+      expect(engine.act(me, 'settings', { mode: 'reto' })).toEqual({});
+      expect(engine.act(me, 'start')).toEqual({});
+      return { engine, me };
+    };
+    const a = seat();
+    const b = seat();
+    expect(a.engine.state.players[0].profession).toBe(b.engine.state.players[0].profession);
+    expect(a.engine.state.decks.small[0].name).toBe(b.engine.state.decks.small[0].name);
+    a.engine.act(a.me, 'roll');
+    b.engine.act(b.me, 'roll');
+    expect(a.engine.state.dice).toBe(b.engine.state.dice);
+    a.engine.state.settings.rounds = 1;
+    a.engine.state.pending = null;
+    a.engine.act(a.me, 'end');
+    expect(a.engine.state.phase).toBe('over');
+    expect(added).toHaveLength(1);
+  });
+
+  it('el reto no deja cambiar dificultad ni duración', () => {
+    const engine = createEngine(newGame('RETO'));
+    const me = engine.join('Ana', '') as Creds;
+    engine.act(me, 'settings', { mode: 'reto' });
+    engine.act(me, 'settings', { difficulty: 'facil', rounds: 30 });
+    expect(engine.state.settings).toEqual({ mode: 'reto', difficulty: 'normal', rounds: 12 });
   });
 });

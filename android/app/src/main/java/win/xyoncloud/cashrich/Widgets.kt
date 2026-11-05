@@ -347,7 +347,7 @@ fun PlayersList(room: Snapshot, meId: String?, compact: Boolean = false) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                             T(p.name + if (p.id == meId) " (tú)" else "", color = C.Cream, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
                             if (p.bankrupt) Icon(Lucide.Skull, "En bancarrota", Modifier.size(16.dp), tint = C.Coral)
-                            else if (p.escaped) Icon(Lucide.Rocket, "En la vía rápida", Modifier.size(16.dp), tint = C.Gold)
+                            else if (p.escaped) Icon(Lucide.Rocket, "En la Avenida del Legado", Modifier.size(16.dp), tint = C.Gold)
                         }
                         Spacer(Modifier.height(4.dp))
                         val fill by animateFloatAsState(p.freedom, label = "fill")

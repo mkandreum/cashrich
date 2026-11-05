@@ -134,7 +134,7 @@ private fun Landing(vm: GameViewModel) {
         Spacer(Modifier.height(16.dp))
         Logo(58.sp)
         Spacer(Modifier.height(14.dp))
-        T("Escapa de la ratonera, haz que tu dinero trabaje y compra tu sueño antes que tus amigos.", color = C.Cream, size = 19.sp, align = TextAlign.Center)
+        T("Sal del barrio, haz que tu dinero trabaje y compra tu Legado antes que tus amigos.", color = C.Cream, size = 19.sp, align = TextAlign.Center)
         T("Online · 2 a 6 jugadores", color = C.Gold, weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 4.dp))
         Spacer(Modifier.height(20.dp))
         if (creating) {
@@ -356,7 +356,7 @@ private fun Lobby(vm: GameViewModel, room: Snapshot, tv: Boolean) {
         }
         GameOptions(vm, room, isAdmin)
         if (isAdmin) {
-            val needed = 2 - room.players.size
+            val needed = (if (room.settings.mode == "reto") 1 else 2) - room.players.size
             Chunky(if (needed > 0) "Falta $needed jugador" else "¡Empezar partida!", Modifier.fillMaxWidth(), Tone.Coral, giant = true, enabled = needed <= 0) { vm.send("start") }
         } else {
             PanelDark(Modifier.fillMaxWidth()) { T("Esperando a que el admin empiece…", color = C.Cream, size = 18.sp, weight = FontWeight.SemiBold, align = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
@@ -384,7 +384,7 @@ private fun GameOptions(vm: GameViewModel, room: Snapshot, isAdmin: Boolean) {
     val levels = listOf(
         Triple("facil", "Fácil", "Más efectivo inicial, crédito barato y mercados tranquilos."),
         Triple("normal", "Normal", "La partida equilibrada: sales cuando tus rentas cubren tus gastos."),
-        Triple("dificil", "Difícil", "Menos efectivo, crédito caro, mercados violentos; necesitas rentas del 125% de tus gastos y los sueños cuestan un 50% más."),
+        Triple("dificil", "Difícil", "Menos efectivo, crédito caro, mercados violentos; necesitas rentas del 125% de tus gastos y los Legados cuestan un 50% más."),
     )
     val durations = listOf(0 to "Sin límite", 12 to "12", 20 to "20", 30 to "30")
     @Composable
@@ -396,8 +396,21 @@ private fun GameOptions(vm: GameViewModel, room: Snapshot, isAdmin: Boolean) {
             contentAlignment = Alignment.Center,
         ) { D(label, color = if (active) C.Ink else C.Cream, size = 14.sp, maxLines = 1) }
     }
+    val modes = listOf(
+        Triple("expres", "Exprés", "Unos 30 minutos: 12 rondas y metas más cercanas. Al final gana quien más haya progresado respecto a su sueldo."),
+        Triple("clasico", "Clásico", "La partida larga de siempre: gana quien compre su Legado."),
+        Triple("reto", "Reto", "Mismas cartas, economía y dados para todas las mesas de la semana, con clasificación. Se puede jugar solo."),
+        Triple("aula", "Aula", "Para clase: Exprés con rentabilidad de cada oferta a la vista y ficha de reflexión al final. Cada móvil, un equipo."),
+    )
     PanelDark(Modifier.fillMaxWidth()) {
         D("Opciones de la partida", color = C.Cream, size = 20.sp)
+        Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            modes.forEach { (id, name, _) ->
+                Pick(name, room.settings.mode == id, Modifier.weight(1f)) { vm.send("settings", buildJsonObject { put("mode", id) }) }
+            }
+        }
+        T((modes.find { it.first == room.settings.mode } ?: modes.first()).third, color = C.Cream.copy(alpha = 0.85f), size = 14.sp, modifier = Modifier.padding(top = 6.dp))
+        if (room.settings.mode == "reto") return@PanelDark
         Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             levels.forEach { (id, name, _) ->
                 Pick(name, room.settings.difficulty == id, Modifier.weight(1f)) { vm.send("settings", buildJsonObject { put("difficulty", id) }) }
@@ -410,7 +423,7 @@ private fun GameOptions(vm: GameViewModel, room: Snapshot, isAdmin: Boolean) {
             }
         }
         T(
-            if (room.settings.rounds > 0) "Al acabar las rondas gana el mayor patrimonio, si nadie ha comprado antes su sueño." else "Gana quien compre primero su sueño.",
+            if (room.settings.rounds > 0) "Al acabar las rondas se decide el ganador, si nadie ha comprado antes su Legado." else "Gana quien compre primero su Legado.",
             color = C.Cream.copy(alpha = 0.85f), size = 14.sp, modifier = Modifier.padding(top = 6.dp),
         )
     }
@@ -581,6 +594,7 @@ private fun TopBar(vm: GameViewModel, room: Snapshot, toggleBoard: (() -> Unit)?
         Logo(20.sp)
         Spacer(Modifier.weight(1f))
         if (!vm.online) Icon(Lucide.WifiOff, "Reconectando", Modifier.size(18.dp), tint = C.Coral)
+        if (room.settings.rounds > 0) Box(Modifier.clip(RoundedCornerShape(8.dp)).background(Color.Black.copy(alpha = 0.25f)).padding(horizontal = 8.dp, vertical = 4.dp)) { D("${minOf(room.round, room.settings.rounds)}/${room.settings.rounds}", color = C.Cream, size = 16.sp) }
         Box(Modifier.clip(RoundedCornerShape(8.dp)).background(Color.Black.copy(alpha = 0.25f)).padding(horizontal = 8.dp, vertical = 4.dp)) { D(room.code, color = C.Cream, size = 16.sp) }
         if (canSkip) Button(Lucide.FastForward) { vm.send("skipTurn") }
         if (toggleBoard != null) Button(Lucide.Tv, toggleBoard)
@@ -593,11 +607,13 @@ private fun TopBar(vm: GameViewModel, room: Snapshot, toggleBoard: (() -> Unit)?
 @Composable
 private fun Victory(vm: GameViewModel, room: Snapshot, tv: Boolean) {
     val winner = room.players.find { it.id == room.winner }
-    val ranking = room.players.sortedWith(compareByDescending<Player> { it.id == room.winner }.thenByDescending { it.netWorth })
+    val byProgress = room.settings.mode != "clasico"
+    val entry = room.report?.find { it.id == vm.session?.playerId }
+    val ranking = room.players.sortedWith(compareByDescending<Player> { it.id == room.winner }.thenByDescending { if (byProgress) it.progress else it.netWorth })
     val pop = remember { Animatable(0.6f) }
     LaunchedEffect(Unit) { pop.animateTo(1f, spring(dampingRatio = 0.45f, stiffness = 200f)) }
     Box(Modifier.fillMaxSize().background(C.Felt950.copy(alpha = 0.85f)).padding(16.dp), contentAlignment = Alignment.Center) {
-        Column(Modifier.widthIn(max = 460.dp).graphicsLayer { scaleX = pop.value; scaleY = pop.value }, horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(Modifier.widthIn(max = 460.dp).graphicsLayer { scaleX = pop.value; scaleY = pop.value }.then(if (tv) Modifier else Modifier.verticalScroll(rememberScrollState())), horizontalAlignment = Alignment.CenterHorizontally) {
             Glyph(winner?.avatar ?: "trophy", 88.dp)
             Sticker("¡${winner?.name ?: "Nadie"} gana!", C.Gold, 42.sp, align = TextAlign.Center)
             T(room.message, color = C.Cream, size = 16.sp, weight = FontWeight.SemiBold, align = TextAlign.Center, modifier = Modifier.padding(vertical = 8.dp))
@@ -607,10 +623,12 @@ private fun Victory(vm: GameViewModel, room: Snapshot, tv: Boolean) {
                         D("${i + 1}", size = 16.sp, modifier = Modifier.width(18.dp))
                         Glyph(p.avatar, 26.dp)
                         T(p.name, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.weight(1f))
-                        D(money(p.netWorth), color = C.MintDark, size = 16.sp, maxLines = 1)
+                        D(if (byProgress) "${if (p.progress >= 0) "+" else ""}${p.progress} meses" else money(p.netWorth), color = C.MintDark, size = 16.sp, maxLines = 1)
                     }
                 }
             }
+            if (entry != null && !tv) ReportPanel(room, entry)
+            LeaderboardPanel(room)
             when {
                 tv -> T("El admin puede empezar otra partida desde su móvil. Atrás dos veces abre una mesa nueva.", color = C.Cream.copy(alpha = 0.85f), weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
                 vm.session?.playerId == room.adminId -> Chunky("Otra partida", Modifier.fillMaxWidth().padding(top = 10.dp), Tone.Coral, giant = true) { vm.send("reset") }

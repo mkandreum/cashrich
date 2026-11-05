@@ -80,7 +80,7 @@ function Choices({ pending, player, send }: { pending: Extract<Pending, { type: 
   );
 }
 
-function Deal({ pending, player, frozen, rate, send }: { pending: Extract<Pending, { type: 'deal' }>; player: PlayerView; frozen: boolean; rate: number; send: Send }) {
+function Deal({ pending, player, frozen, rate, aula, send }: { pending: Extract<Pending, { type: 'deal' }>; player: PlayerView; frozen: boolean; rate: number; aula: boolean; send: Send }) {
   const { card } = pending;
   const missing = Math.max(0, card.down - player.cash);
   const loan = Math.ceil(missing / 1000) * 1000;
@@ -91,6 +91,7 @@ function Deal({ pending, player, frozen, rate, send }: { pending: Extract<Pendin
     <GameCard deck={pending.deck} card={card}>
       <div className="mt-2 flex flex-wrap gap-1.5 text-sm font-semibold">
         {months > 0 && <span className="rounded-full bg-sky/25 px-2.5 py-0.5">Recuperas la entrada en {months} {months === 1 ? 'mes' : 'meses'}</span>}
+        {aula && card.down > 0 && <span className="rounded-full bg-gold/40 px-2.5 py-0.5">Rentabilidad: {Math.round((card.flow * 1200) / card.down)} % al año sobre la entrada</span>}
         {gap !== 0 && <span className={`rounded-full px-2.5 py-0.5 ${gap > 0 ? 'bg-mint/35' : 'bg-coral/20'}`}>{gap > 0 ? `Ganga: −${gap}%` : `Caro: +${-gap}%`}</span>}
       </div>
       {missing > 0 && (
@@ -146,7 +147,7 @@ export function ActionPanel({ room, me, motion, send }: { room: Snapshot; me: Pl
   }
 
   const { pending } = room;
-  if (pending?.type === 'deal') return <Deal pending={pending} player={me} frozen={room.frozen} rate={room.economy.rate} send={send} />;
+  if (pending?.type === 'deal') return <Deal pending={pending} player={me} frozen={room.frozen} rate={room.economy.rate} aula={room.settings.mode === 'aula'} send={send} />;
   if (pending?.type === 'sell' || pending?.type === 'rent') return <Choices pending={pending} player={me} send={send} />;
 
   if (pending?.type === 'dream') {

@@ -178,6 +178,7 @@ private fun Deal(pending: Pending, card: Card, me: Player, room: Snapshot, send:
     val gap = ((1 - (card.idx ?: 1.0)) * 100).roundToInt()
     GameCard(pending.deck, card) {
         Spacer(Modifier.height(8.dp))
+        if (room.settings.mode == "aula" && (card.down ?: 0.0) > 0) Chip("Rentabilidad: ${((card.flow ?: 0.0) * 1200 / (card.down ?: 1.0)).roundToInt()} % al año sobre la entrada", C.Gold.copy(alpha = 0.4f))
         if (months > 0) Chip("Recuperas la entrada en $months ${if (months == 1) "mes" else "meses"}", C.Sky.copy(alpha = 0.25f))
         if (gap != 0) {
             Spacer(Modifier.height(4.dp))
@@ -285,7 +286,7 @@ fun Wallet(room: Snapshot, me: Player, send: Send) {
                 T("Patrimonio ${money(me.netWorth)}", color = C.Ink.copy(alpha = 0.7f), size = 14.sp, weight = FontWeight.SemiBold)
             }
             me.synergies.forEach { Chip("★ $it", C.Gold) }
-            if (me.assets.isEmpty()) T("Aún no tienes nada que te pague. Esa es la misión: compra activos en las casillas de oportunidad.", color = C.Ink.copy(alpha = 0.7f), size = 14.sp)
+            if (me.assets.isEmpty()) T("Aún no tienes nada que te pague. Esa es la misión: compra activos en las casillas de Ganga y Gran proyecto.", color = C.Ink.copy(alpha = 0.7f), size = 14.sp)
             me.assets.forEach { a ->
                 Column(Modifier.fillMaxWidth().padding(top = 6.dp).clip(RoundedCornerShape(12.dp)).background(C.CreamDark.copy(alpha = 0.6f)).padding(horizontal = 10.dp, vertical = 6.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -311,6 +312,7 @@ fun Wallet(room: Snapshot, me: Player, send: Send) {
                 }
             }
         }
+        Trades(room, me, send)
         Panel(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
             D("Banco", size = 18.sp)
             val notes = (if (!myTurn) " Solo puedes operar en tu turno." else "") + (if (room.frozen) " Crédito congelado este turno." else "")
@@ -328,7 +330,7 @@ fun Wallet(room: Snapshot, me: Player, send: Send) {
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Column(Modifier.weight(1f)) {
-                        T("Deuda de ${money(d.balance)}", weight = FontWeight.SemiBold)
+                        T("Deuda de ${money(d.balance)}" + (d.creditor?.let { " con $it" } ?: ""), weight = FontWeight.SemiBold)
                         T("Al ${d.rate.roundToInt()}%: pagas ${money(d.payment)}/mes", color = C.Ink.copy(alpha = 0.65f), size = 12.sp)
                     }
                     Chunky("Liquidar", tone = Tone.Mint, small = true, enabled = myTurn && me.cash >= d.balance) {

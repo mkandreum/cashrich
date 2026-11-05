@@ -44,10 +44,31 @@ data class Asset(
 )
 
 @Serializable
-data class Debt(val id: String, val balance: Double, val payment: Double, val rate: Double = 0.0)
+data class Debt(val id: String, val balance: Double, val payment: Double, val rate: Double = 0.0, val creditor: String? = null)
 
 @Serializable
-data class Settings(val difficulty: String = "normal", val rounds: Int = 0)
+data class Settings(val difficulty: String = "normal", val rounds: Int = 0, val mode: String = "clasico")
+
+@Serializable
+data class Offer(
+    val id: String, val kind: String, val fromId: String, val toId: String, val assetId: String? = null, val assetName: String? = null,
+    val amount: Double = 0.0, val rate: Int? = null,
+)
+
+@Serializable
+data class ReportDeal(val name: String, val gain: Double = 0.0)
+
+@Serializable
+data class ReportTotals(val rent: Double = 0.0, val taxes: Double = 0.0, val gustos: Double = 0.0, val bills: Double = 0.0, val interest: Double = 0.0)
+
+@Serializable
+data class ReportEntry(
+    val id: String, val name: String, val series: List<Double> = emptyList(), val best: ReportDeal? = null, val worst: ReportDeal? = null,
+    val totals: ReportTotals = ReportTotals(), val lesson: String = "",
+)
+
+@Serializable
+data class ScoreEntry(val name: String, val avatar: String = "", val score: Double = 0.0)
 
 @Serializable
 data class Economy(
@@ -77,6 +98,7 @@ data class Player(
     val flow: Double = 0.0,
     val loanRoom: Double = 0.0,
     val netWorth: Double = 0.0,
+    val progress: Double = 0.0,
     val synergies: List<String> = emptyList(),
     val freedom: Float = 0f,
     val goal: Double = 0.0,
@@ -103,6 +125,10 @@ data class Snapshot(
     val message: String = "",
     val winner: String? = null,
     val log: List<LogEntry> = emptyList(),
+    val offers: List<Offer> = emptyList(),
+    val report: List<ReportEntry>? = null,
+    val week: String? = null,
+    val leaderboard: List<ScoreEntry> = emptyList(),
     val players: List<Player> = emptyList(),
 ) {
     val current: Player? get() = players.getOrNull(turn)

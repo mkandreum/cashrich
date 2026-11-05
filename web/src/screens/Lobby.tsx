@@ -10,17 +10,31 @@ import { navigate } from '../App';
 const LEVELS = [
   ['facil', 'Fácil', 'Más efectivo inicial, crédito barato y mercados tranquilos.'],
   ['normal', 'Normal', 'La partida equilibrada: sales cuando tus rentas cubren tus gastos.'],
-  ['dificil', 'Difícil', 'Menos efectivo, crédito caro, mercados violentos; necesitas rentas del 125% de tus gastos y los sueños cuestan un 50% más.'],
+  ['dificil', 'Difícil', 'Menos efectivo, crédito caro, mercados violentos; necesitas rentas del 125% de tus gastos y los Legados cuestan un 50% más.'],
 ] as const;
 const DURATIONS = [[0, 'Sin límite'], [12, '12 rondas'], [20, '20 rondas'], [30, '30 rondas']] as const;
+const MODES = [
+  ['expres', 'Exprés', 'Unos 30 minutos: 12 rondas y metas más cercanas. Al final gana quien más haya progresado respecto a su sueldo.'],
+  ['clasico', 'Clásico', 'La partida larga de siempre: gana quien compre su Legado.'],
+  ['reto', 'Reto semanal', 'Mismas cartas, economía y dados para todas las mesas de la semana, con clasificación. Se puede jugar solo.'],
+  ['aula', 'Aula', 'Para clase: Exprés con rentabilidad de cada oferta a la vista y ficha de reflexión al final. Cada móvil, un equipo.'],
+] as const;
 
 function GameOptions({ room, isHost, send }: { room: Snapshot; isHost: boolean; send: (type: string, payload?: unknown) => void }) {
-  const { difficulty, rounds } = room.settings;
+  const { difficulty, rounds, mode } = room.settings;
   const level = LEVELS.find(([id]) => id === difficulty)!;
+  const modeInfo = MODES.find(([id]) => id === mode) ?? MODES[0];
   const pick = (active: boolean) => `rounded-xl border-2 px-2 py-1.5 font-display text-sm ${active ? 'border-gold bg-gold text-ink' : 'border-white/20 bg-white/10'} ${isHost ? 'cursor-pointer' : ''}`;
   return (
     <div className="panel-dark p-4">
       <h2 className="font-display text-xl">Opciones de la partida</h2>
+      <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+        {MODES.map(([id, name]) => (
+          <button key={id} disabled={!isHost} aria-pressed={id === mode} className={pick(id === mode)} onClick={() => send('settings', { mode: id })}>{name}</button>
+        ))}
+      </div>
+      <p className="mt-1.5 text-sm leading-snug text-cream/85">{modeInfo[2]}</p>
+      {mode !== 'reto' && <>
       <div className="mt-2 grid grid-cols-3 gap-1.5">
         {LEVELS.map(([id, name]) => (
           <button key={id} disabled={!isHost} aria-pressed={id === difficulty} className={pick(id === difficulty)} onClick={() => send('settings', { difficulty: id })}>{name}</button>
@@ -32,7 +46,8 @@ function GameOptions({ room, isHost, send }: { room: Snapshot; isHost: boolean; 
           <button key={value} disabled={!isHost} aria-pressed={value === rounds} className={pick(value === rounds)} onClick={() => send('settings', { rounds: value })}>{name}</button>
         ))}
       </div>
-      <p className="mt-1.5 text-sm leading-snug text-cream/85">{rounds ? 'Al acabar las rondas gana el mayor patrimonio, si nadie ha comprado antes su sueño.' : 'Gana quien compre primero su sueño.'}</p>
+      <p className="mt-1.5 text-sm leading-snug text-cream/85">{rounds ? 'Al acabar las rondas se decide el ganador, si nadie ha comprado antes su Legado.' : 'Gana quien compre primero su Legado.'}</p>
+      </>}
     </div>
   );
 }
@@ -44,7 +59,7 @@ export function Lobby({ room, meId, isHost, tv, send }: {
   const [qr, setQr] = useState('');
   const [copied, setCopied] = useState(false);
   const link = `${origin}/m/${room.code}`;
-  const needed = 2 - room.players.length;
+  const needed = (room.settings.mode === 'reto' ? 1 : 2) - room.players.length;
 
   /* En localhost el enlace debe llevar la IP de la Wi-Fi para que sirva a los móviles */
   useEffect(() => {
