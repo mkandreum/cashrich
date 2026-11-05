@@ -1,6 +1,8 @@
 /* Tablero 3D: edificios en cada casilla, ciudad de activos en la plaza, dado y fichas físicas. */
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { board as BOARD, ratoneraPos as BOARD_POS, via as VIA, viaPos as VIA_POS } from '../../data.json';
 import MODELS from '../../shared/models3d.json';
 import type { Asset, Snapshot } from './api';
@@ -153,6 +155,7 @@ export class BoardScene {
   private activeKey = '';
   private sun!: THREE.DirectionalLight;
   private sunTarget = 2.6;
+  private sky!: THREE.HemisphereLight;
 
   constructor(private host: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
@@ -250,24 +253,76 @@ export class BoardScene {
     return geo;
   }
 
+  /* Piezas estáticas fundidas por material (pocas llamadas de dibujo) con aristas redondeadas; las que giran quedan sueltas. */
+  private modelCache = new Map<string, { geo: THREE.BufferGeometry; mat: THREE.Material }[]>();
+
+  private partGeometry(part: Part) {
+    const [w, h, d] = part.z;
+    let geo: THREE.BufferGeometry;
+    if (part.s === 'box' || part.s === 'win') {
+      const radius = Math.min(0.028, Math.min(w, h, d) * 0.2);
+      geo = radius > 0.004 ? new RoundedBoxGeometry(w, h, d, 2, radius) : new THREE.BoxGeometry(w, h, d);
+    } else {
+      geo = this.geometry(part.s).clone();
+      geo.scale(w, h, d);
+    }
+    if (part.r) geo.applyMatrix4(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(THREE.MathUtils.degToRad(part.r[0]), THREE.MathUtils.degToRad(part.r[1]), THREE.MathUtils.degToRad(part.r[2]))));
+    geo.translate(part.p[0], part.p[1], part.p[2]);
+    return geo.index ? geo.toNonIndexed() : geo;
+  }
+
   private buildModel(name: string) {
     const group = new THREE.Group();
-    parts(name).forEach((part) => {
-      const metal = part.c === '#FFC83D' || part.c === '#F2B21E' || part.c === '#FFD65C';
-      const mesh = new THREE.Mesh(
-        this.geometry(part.s === 'win' ? 'box' : part.s),
-        this.material(part.c, { windows: part.s === 'win', metal: metal ? 0.65 : 0, rough: metal ? 0.3 : undefined }),
-      );
+    const list = parts(name);
+    let merged = this.modelCache.get(name);
+    if (!merged) {
+      const byMaterial = new Map<string, { mat: THREE.Material; geos: THREE.BufferGeometry[] }>();
+      list.forEach((part) => {
+        if (part.spin || part.spinZ) return;
+        const metal = part.c === '#FFC83D' || part.c === '#F2B21E' || part.c === '#FFD65C' || part.c === '#E8A512';
+        const opts = { windows: part.s === 'win', metal: metal ? 0.65 : 0, rough: metal ? 0.3 : undefined };
+        const key = `${part.c}:${opts.windows}:${opts.metal}`;
+        let entry = byMaterial.get(key);
+        if (!entry) byMaterial.set(key, (entry = { mat: this.material(part.c, opts), geos: [] }));
+        entry.geos.push(this.partGeometry(part));
+      });
+      merged = [...byMaterial.values()].map(({ mat, geos }) => ({ geo: mergeGeometries(geos, false)!, mat }));
+      this.modelCache.set(name, merged);
+    }
+    merged.forEach(({ geo, mat }) => {
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+    });
+    list.forEach((part) => {
+      if (!part.spin && !part.spinZ) return;
+      const metal = part.c === '#FFC83D' || part.c === '#F2B21E' || part.c === '#FFD65C' || part.c === '#E8A512';
+      const mesh = new THREE.Mesh(this.geometry(part.s === 'win' ? 'box' : part.s), this.material(part.c, { windows: false, metal: metal ? 0.65 : 0, rough: metal ? 0.3 : undefined }));
       mesh.position.set(part.p[0], part.p[1], part.p[2]);
       mesh.scale.set(part.z[0], part.z[1], part.z[2]);
       if (part.r) mesh.rotation.set(THREE.MathUtils.degToRad(part.r[0]), THREE.MathUtils.degToRad(part.r[1]), THREE.MathUtils.degToRad(part.r[2]));
       mesh.castShadow = true;
-      mesh.receiveShadow = true;
       group.add(mesh);
       if (part.spin) this.spinners.push(mesh);
       if (part.spinZ) this.spinnersZ.push(mesh);
     });
+    if (name === 'factory') this.addSmoke(group, [[0.24, 0.7, -0.12], [0.34, 0.58, -0.12]]);
     return group;
+  }
+
+  /* Humo de chimenea: bolitas que suben, crecen y se apagan */
+  private smoke: { mesh: THREE.Mesh; base: THREE.Vector3; t: number }[] = [];
+  private addSmoke(group: THREE.Group, stacks: number[][]) {
+    stacks.forEach(([x, y, z], si) => {
+      for (let i = 0; i < 3; i++) {
+        const mat = new THREE.MeshStandardMaterial({ color: '#E9ECF3', roughness: 1, transparent: true, opacity: 0 });
+        const mesh = new THREE.Mesh(this.geometry('sphere'), mat);
+        mesh.castShadow = false;
+        group.add(mesh);
+        this.smoke.push({ mesh, base: new THREE.Vector3(x, y, z), t: (i + si * 0.4) / 3 });
+      }
+    });
   }
 
   private tileGeometry() {
@@ -320,6 +375,7 @@ export class BoardScene {
 
   private buildWorld() {
     const sky = new THREE.HemisphereLight('#FFF3D6', '#27624F', 1.5);
+    this.sky = sky;
     this.scene.add(sky);
     const sun = new THREE.DirectionalLight('#FFF1D0', 2.6);
     this.sun = sun;
@@ -345,7 +401,15 @@ export class BoardScene {
     road.position.y = -0.02;
     road.receiveShadow = true;
     this.scene.add(road);
-    const base = new THREE.Mesh(new THREE.BoxGeometry(CELL * COLS + 0.02, 0.04, CELL * ROWS + 0.02), new THREE.MeshStandardMaterial({ color: '#2B6B55', roughness: 0.95 }));
+    const grass = this.canvasTexture(128, (g) => {
+      g.fillStyle = '#2B6B55';
+      g.fillRect(0, 0, 128, 128);
+      for (let i = 0; i < 260; i++) {
+        g.fillStyle = Math.random() > 0.5 ? '#34795F' : '#245C49';
+        g.fillRect(Math.random() * 128, Math.random() * 128, 2 + Math.random() * 3, 2);
+      }
+    }, COLS * 1.4, ROWS * 1.4);
+    const base = new THREE.Mesh(new THREE.BoxGeometry(CELL * COLS + 0.02, 0.04, CELL * ROWS + 0.02), new THREE.MeshStandardMaterial({ color: '#ffffff', map: grass, roughness: 0.95 }));
     base.position.y = -0.005;
     base.receiveShadow = true;
     this.scene.add(base);
@@ -369,7 +433,16 @@ export class BoardScene {
 
     // Plaza central: aquí se levanta la ciudad de cada jugador
     const plazaD = PLAZA_D;
-    const plaza = new THREE.Mesh(new THREE.BoxGeometry(laneW, 0.06, plazaD), new THREE.MeshStandardMaterial({ color: '#D9C9A0', roughness: 0.85 }));
+    const pavers = this.canvasTexture(128, (g) => {
+      g.fillStyle = '#D9C9A0';
+      g.fillRect(0, 0, 128, 128);
+      for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) {
+        const shade = 190 + Math.floor(Math.random() * 34);
+        g.fillStyle = `rgb(${shade + 22},${shade + 8},${shade - 40})`;
+        g.fillRect(x * 32 + 1.5, y * 32 + 1.5, 29, 29);
+      }
+    }, laneW / 1.4, plazaD / 1.4);
+    const plaza = new THREE.Mesh(new THREE.BoxGeometry(laneW, 0.06, plazaD), new THREE.MeshStandardMaterial({ color: '#ffffff', map: pavers, roughness: 0.85 }));
     plaza.position.set(0, 0.03, PLAZA_Z + 0.02);
     plaza.receiveShadow = true;
     this.scene.add(plaza);
@@ -407,6 +480,18 @@ export class BoardScene {
       this.clouds.push(cloud);
       this.scene.add(cloud);
     }
+  }
+
+  private canvasTexture(size: number, paint: (g: CanvasRenderingContext2D) => void, repeatX: number, repeatY: number) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    paint(canvas.getContext('2d')!);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(repeatX, repeatY);
+    tex.anisotropy = 4;
+    return tex;
   }
 
   private buildCars() {
@@ -534,7 +619,8 @@ export class BoardScene {
     }
 
     this.sunTarget = { recesion: 1.5, boom: 3.2, recuperacion: 2.3, expansion: 2.6 }[room.economy.phase];
-    this.sun.color.set(room.economy.phase === 'recesion' ? '#BFD0E8' : '#FFF1D0');
+    this.sun.color.set(room.economy.phase === 'recesion' ? '#BFD0E8' : room.economy.phase === 'boom' ? '#FFE2A0' : '#FFF1D0');
+    this.sky.color.set({ recesion: '#B9C6DC', boom: '#FFE9B8', recuperacion: '#E6F2E0', expansion: '#FFF3D6' }[room.economy.phase]);
     this.syncCity(room);
   }
 
@@ -599,6 +685,12 @@ export class BoardScene {
     const now = performance.now() / 1000;
     this.spinners.forEach((o) => { o.rotation.y += dt * 1.3; });
     this.spinnersZ.forEach((o) => { o.rotation.z += dt * 2.2; });
+    this.smoke.forEach((p) => {
+      p.t = (p.t + dt * 0.28) % 1;
+      p.mesh.position.set(p.base.x + p.t * 0.12, p.base.y + p.t * 0.5, p.base.z);
+      p.mesh.scale.setScalar(0.06 + p.t * 0.16);
+      (p.mesh.material as THREE.MeshStandardMaterial).opacity = Math.sin(p.t * Math.PI) * 0.55;
+    });
 
     const path = this.perimeter();
     this.cars.forEach((car) => {

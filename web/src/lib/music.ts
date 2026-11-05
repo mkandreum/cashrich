@@ -8,6 +8,7 @@ export type Mood = 'lobby' | 'game' | 'fast';
 const RATE = 22050;
 const STEPS_PER_CHORD = 8; // corcheas: 4 tiempos
 const PENTA = [0, 2, 4, 7, 9];
+const ECHO = [[0.27, 0.34], [0.54, 0.18], [0.81, 0.09]]; // [segundos, ganancia]: eco suave de la melodía
 
 type Quality = 'maj7' | 'm7' | 'dom7' | 'maj' | 'min';
 const QUALITY: Record<Quality, number[]> = {
@@ -20,6 +21,23 @@ const PROGRESSIONS: Record<Mood, { bpm: number; chords: Chord[]; melody: number;
   lobby: { bpm: 84, melody: 42, seed: 3, chords: [[C, 'maj7'], [A, 'm7'], [F, 'maj7'], [G, 'dom7'], [C, 'maj7'], [E, 'm7'], [F, 'maj7'], [G, 'dom7']] },
   game: { bpm: 104, melody: 58, seed: 11, chords: [[C, 'maj7'], [A, 'm7'], [D, 'm7'], [G, 'dom7'], [C, 'maj7'], [E, 'm7'], [F, 'maj7'], [G, 'dom7']] },
   fast: { bpm: 126, melody: 72, seed: 29, chords: [[A, 'm7'], [F, 'maj7'], [C, 'maj'], [G, 'dom7'], [A, 'm7'], [F, 'maj7'], [D, 'm7'], [E, 'dom7']] },
+};
+
+/* Frases de 16 corcheas: [paso, grado de la pentatónica (0-9), duración en corcheas]. Se tocan A B A B'. */
+type Phrase = [number, number, number][];
+const MOTIFS: Record<Mood, { A: Phrase; B: Phrase }> = {
+  lobby: {
+    A: [[0, 5, 3], [3, 4, 1], [4, 3, 2], [6, 2, 2], [8, 3, 3], [11, 2, 1], [12, 1, 2], [14, 0, 2]],
+    B: [[0, 2, 2], [2, 3, 2], [4, 4, 3], [7, 3, 1], [8, 5, 3], [11, 4, 1], [12, 3, 2], [14, 2, 2]],
+  },
+  game: {
+    A: [[0, 4, 1], [1, 5, 1], [2, 7, 2], [4, 5, 1], [5, 4, 1], [6, 3, 2], [8, 4, 1], [9, 5, 1], [10, 7, 2], [12, 8, 2], [14, 7, 1], [15, 5, 1]],
+    B: [[0, 5, 2], [2, 4, 1], [3, 3, 1], [4, 2, 2], [6, 3, 1], [7, 4, 1], [8, 5, 2], [10, 4, 1], [11, 3, 1], [12, 2, 2], [14, 0, 2]],
+  },
+  fast: {
+    A: [[0, 7, 1], [1, 8, 1], [2, 9, 1], [3, 8, 1], [4, 7, 2], [6, 5, 1], [7, 7, 1], [8, 8, 1], [9, 9, 1], [10, 8, 1], [11, 7, 2], [13, 5, 1], [14, 4, 2]],
+    B: [[0, 5, 1], [1, 7, 1], [2, 8, 2], [4, 9, 1], [5, 8, 1], [6, 7, 1], [7, 5, 1], [8, 4, 1], [9, 5, 1], [10, 7, 2], [12, 5, 1], [13, 4, 1], [14, 2, 2]],
+  },
 };
 
 const hz = (midi: number) => 440 * Math.pow(2, (midi - 69) / 12);
@@ -40,9 +58,10 @@ export function renderLoop(mood: Mood): Float32Array {
   const stepLen = Math.round(stepSec * RATE);
   const total = p.chords.length * STEPS_PER_CHORD * stepLen;
   const mix = new Float64Array(total);
+  const lead = new Float64Array(total);
 
   /** Suma una nota (con cola que da la vuelta al principio del bucle). */
-  const note = (at: number, midiOrHz: number, len: number, vol: number, kind: 'sine' | 'tri' | 'bell' | 'pad' | 'bass', isHz = false) => {
+  const note = (at: number, midiOrHz: number, len: number, vol: number, kind: 'sine' | 'tri' | 'bell' | 'pad' | 'bass', isHz = false, out: Float64Array = mix) => {
     const f = isHz ? midiOrHz : hz(midiOrHz);
     const n = Math.round(len * RATE);
     const attack = kind === 'pad' ? 0.18 * RATE : 0.004 * RATE;
@@ -59,7 +78,7 @@ export function renderLoop(mood: Mood): Float32Array {
       let env: number;
       if (kind === 'pad') env = Math.min(1, i / attack) * Math.min(1, (n - i) / (0.25 * RATE));
       else env = Math.min(1, i / attack) * Math.exp(-(kind === 'bass' ? 3.2 : 4.5) * t);
-      mix[(at + i) % total] += s * env * vol;
+      out[(at + i) % total] += s * env * vol;
     }
   };
   const kick = (at: number, vol: number) => {
@@ -79,7 +98,6 @@ export function renderLoop(mood: Mood): Float32Array {
     }
   };
 
-  let walk = 4; // posición dentro de las dos octavas de pentatónica
   for (let ci = 0; ci < p.chords.length; ci++) {
     const [root, q] = p.chords[ci];
     const tones = QUALITY[q];
@@ -99,32 +117,41 @@ export function renderLoop(mood: Mood): Float32Array {
         for (const t of tones) note(at, root + 24 + t, stepSec * 8.2, mood === 'lobby' ? 0.05 : 0.04, 'pad');
       }
 
-      // Melodía: paseo aleatorio determinista por la pentatónica
-      const h = hash(g * 131 + p.seed);
-      if (h % 100 < p.melody) {
-        const stepDir = ((h >>> 8) % 5) - 2;
-        walk = Math.max(0, Math.min(9, walk + stepDir));
-        const midi = 72 + PENTA[walk % 5] + 12 * Math.floor(walk / 5);
-        const long = ((h >>> 16) % 4) === 0;
-        note(at, midi, stepSec * (long ? 3.2 : 1.7), mood === 'lobby' ? 0.11 : 0.1, 'bell');
+      // Melodía: frases A B A B' (la última acaba en la tónica)
+      if (l === 0 && ci % 2 === 0) {
+        const phrase = Math.floor(ci / 2);
+        const motif = MOTIFS[mood][phrase % 2 === 0 ? 'A' : 'B'];
+        motif.forEach(([step, deg, len], k) => {
+          let d = deg;
+          if (phrase === 3 && k >= motif.length - 2) d = k === motif.length - 1 ? 0 : 2; // cadencia final
+          if (phrase === 2 && k === 3) d += 1; // pequeña variación en la repetición
+          const midi = 72 + PENTA[d % 5] + 12 * Math.floor(d / 5);
+          const vel = 0.88 + (hash(g * 17 + k) % 13) / 100; // matiz humano
+          note(at + step * stepLen, midi, stepSec * (len + 0.8), (mood === 'lobby' ? 0.11 : 0.1) * vel, 'bell', false, lead);
+        });
       }
 
       // Percusión
       if (mood !== 'lobby') {
         if (l === 0 || l === 4) kick(at, mood === 'fast' ? 0.34 : 0.28);
         if (mood === 'fast' && (l === 2 || l === 6)) hat(at, 0.55, 0.12, 5);
-        if (l % 2 === 1) hat(at, mood === 'fast' ? 0.2 : 0.14, 0.05, 1);
+        if (l % 2 === 1) hat(at, mood === 'fast' ? 0.16 : 0.1, 0.05, 1);
       } else if (l % 2 === 1) {
-        hat(at, 0.07, 0.07, 2);
+        hat(at, 0.045, 0.07, 2);
       }
     }
   }
 
-  let peak = 0;
-  for (let i = 0; i < total; i++) peak = Math.max(peak, Math.abs(mix[i]));
-  const k = peak > 0 ? 0.8 / peak : 1;
+  for (let i = 0; i < total; i++) {
+    let v = lead[i];
+    for (const [sec, gain] of ECHO) v += lead[(i - Math.round(sec * RATE) % total + total) % total] * gain;
+    mix[i] += v;
+  }
+  let sq = 0;
+  for (let i = 0; i < total; i++) sq += mix[i] * mix[i];
+  const k = Math.sqrt(sq / total) > 0 ? 0.15 / Math.sqrt(sq / total) : 1; // mismo volumen en los tres ambientes
   const out = new Float32Array(total);
-  for (let i = 0; i < total; i++) out[i] = mix[i] * k;
+  for (let i = 0; i < total; i++) out[i] = Math.tanh(mix[i] * k * 1.1) / 1.1; // limitador suave: sin saturar
   return out;
 }
 

@@ -18,6 +18,8 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlin.math.sqrt
+import kotlin.math.tanh
 
 /**
  * Música original de CashRich, sintetizada al vuelo (sin ficheros de audio).
@@ -45,6 +47,21 @@ object Music {
         Mood.FAST to Prog(126, 72, 29, listOf(A to "m7", F to "maj7", C to "maj", G to "dom7", A to "m7", F to "maj7", D to "m7", E to "dom7")),
     )
 
+    /** Frases de 16 corcheas: (paso, grado de la pentatónica, duración en corcheas). Se tocan A B A B'. */
+    private class N(val step: Int, val deg: Int, val len: Int)
+    private fun ph(vararg v: Int) = v.toList().chunked(3).map { N(it[0], it[1], it[2]) }
+    private val MOTIF_A = mapOf(
+        Mood.LOBBY to ph(0, 5, 3, 3, 4, 1, 4, 3, 2, 6, 2, 2, 8, 3, 3, 11, 2, 1, 12, 1, 2, 14, 0, 2),
+        Mood.GAME to ph(0, 4, 1, 1, 5, 1, 2, 7, 2, 4, 5, 1, 5, 4, 1, 6, 3, 2, 8, 4, 1, 9, 5, 1, 10, 7, 2, 12, 8, 2, 14, 7, 1, 15, 5, 1),
+        Mood.FAST to ph(0, 7, 1, 1, 8, 1, 2, 9, 1, 3, 8, 1, 4, 7, 2, 6, 5, 1, 7, 7, 1, 8, 8, 1, 9, 9, 1, 10, 8, 1, 11, 7, 2, 13, 5, 1, 14, 4, 2),
+    )
+    private val MOTIF_B = mapOf(
+        Mood.LOBBY to ph(0, 2, 2, 2, 3, 2, 4, 4, 3, 7, 3, 1, 8, 5, 3, 11, 4, 1, 12, 3, 2, 14, 2, 2),
+        Mood.GAME to ph(0, 5, 2, 2, 4, 1, 3, 3, 1, 4, 2, 2, 6, 3, 1, 7, 4, 1, 8, 5, 2, 10, 4, 1, 11, 3, 1, 12, 2, 2, 14, 0, 2),
+        Mood.FAST to ph(0, 5, 1, 1, 7, 1, 2, 8, 2, 4, 9, 1, 5, 8, 1, 6, 7, 1, 7, 5, 1, 8, 4, 1, 9, 5, 1, 10, 7, 2, 12, 5, 1, 13, 4, 1, 14, 2, 2),
+    )
+    private val ECHO = listOf(0.27 to 0.34, 0.54 to 0.18, 0.81 to 0.09) // (segundos, ganancia): eco suave de la melodía
+
     private fun hz(midi: Int) = 440.0 * 2.0.pow((midi - 69) / 12.0)
 
     private fun hash(x: Int): Long {
@@ -65,8 +82,9 @@ object Music {
         val stepLen = (stepSec * RATE).roundToInt()
         val total = p.chords.size * STEPS_PER_CHORD * stepLen
         val mix = DoubleArray(total)
+        val lead = DoubleArray(total)
 
-        fun note(at: Int, midi: Int, len: Double, vol: Double, kind: Kind) {
+        fun note(at: Int, midi: Int, len: Double, vol: Double, kind: Kind, out: DoubleArray = mix) {
             val f = hz(midi)
             val n = (len * RATE).roundToInt()
             val attack = if (kind == Kind.PAD) 0.18 * RATE else 0.004 * RATE
@@ -83,7 +101,7 @@ object Music {
                 }
                 val env = if (kind == Kind.PAD) min(1.0, i / attack) * min(1.0, (n - i) / (0.25 * RATE))
                 else min(1.0, i / attack) * exp(-(if (kind == Kind.BASS) 3.2 else 4.5) * t)
-                mix[(at + i) % total] += s * env * vol
+                out[(at + i) % total] += s * env * vol
             }
         }
         fun kick(at: Int, vol: Double) {
@@ -103,7 +121,6 @@ object Music {
             }
         }
 
-        var walk = 4
         p.chords.forEachIndexed { ci, (root, q) ->
             val tones = QUALITY.getValue(q)
             for (l in 0 until STEPS_PER_CHORD) {
@@ -119,29 +136,40 @@ object Music {
                     for (t in tones) note(at, root + 24 + t, stepSec * 8.2, if (mood == Mood.LOBBY) 0.05 else 0.04, Kind.PAD)
                 }
 
-                val h = hash(g * 131 + p.seed)
-                if (h % 100 < p.melody) {
-                    val dir = ((h ushr 8) % 5).toInt() - 2
-                    walk = max(0, min(9, walk + dir))
-                    val midi = 72 + PENTA[walk % 5] + 12 * (walk / 5)
-                    val long = ((h ushr 16) % 4).toInt() == 0
-                    note(at, midi, stepSec * (if (long) 3.2 else 1.7), if (mood == Mood.LOBBY) 0.11 else 0.1, Kind.BELL)
+                // Melodía: frases A B A B' (la última acaba en la tónica)
+                if (l == 0 && ci % 2 == 0) {
+                    val phrase = ci / 2
+                    val motif = (if (phrase % 2 == 0) MOTIF_A else MOTIF_B).getValue(mood)
+                    motif.forEachIndexed { k, n ->
+                        var d = n.deg
+                        if (phrase == 3 && k >= motif.size - 2) d = if (k == motif.size - 1) 0 else 2
+                        if (phrase == 2 && k == 3) d += 1
+                        val midi = 72 + PENTA[d % 5] + 12 * (d / 5)
+                        val vel = 0.88 + (hash(g * 17 + k) % 13).toDouble() / 100
+                        note(at + n.step * stepLen, midi, stepSec * (n.len + 0.8), (if (mood == Mood.LOBBY) 0.11 else 0.1) * vel, Kind.BELL, lead)
+                    }
                 }
 
                 if (mood != Mood.LOBBY) {
                     if (l == 0 || l == 4) kick(at, if (mood == Mood.FAST) 0.34 else 0.28)
                     if (mood == Mood.FAST && (l == 2 || l == 6)) hat(at, 0.55, 0.12, 5)
-                    if (l % 2 == 1) hat(at, if (mood == Mood.FAST) 0.2 else 0.14, 0.05, 1)
+                    if (l % 2 == 1) hat(at, if (mood == Mood.FAST) 0.16 else 0.1, 0.05, 1)
                 } else if (l % 2 == 1) {
-                    hat(at, 0.07, 0.07, 2)
+                    hat(at, 0.045, 0.07, 2)
                 }
             }
         }
 
-        var peak = 0.0
-        for (v in mix) peak = max(peak, abs(v))
-        val k = if (peak > 0) 0.8 / peak else 1.0
-        return ShortArray(total) { (mix[it] * k * Short.MAX_VALUE).toInt().toShort() }
+        for (i in 0 until total) {
+            var v = lead[i]
+            for ((sec, gain) in ECHO) v += lead[(i - (sec * RATE).roundToInt() % total + total) % total] * gain
+            mix[i] += v
+        }
+        var sq = 0.0
+        for (v in mix) sq += v * v
+        val rms = sqrt(sq / total)
+        val k = if (rms > 0) 0.15 / rms else 1.0 // mismo volumen en los tres ambientes
+        return ShortArray(total) { (tanh(mix[it] * k * 1.1) / 1.1 * Short.MAX_VALUE).toInt().toShort() }
     }
 
     /* ───────── Reproductor ───────── */
