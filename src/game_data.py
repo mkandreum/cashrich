@@ -1,35 +1,35 @@
 # -*- coding: utf-8 -*-
-"""Datos del juego FLUJO LIBRE - juego original de educacion financiera."""
+"""Datos del juego CashRich - juego original de educacion financiera."""
 
 JUEGO = "CashRich"
-LEMA = "El juego de la libertad financiera"
+LEMA = "Construye tu legado"
 
 # ---------------------------------------------------------------- PROFESIONES
 # (nombre, emoji, salario neto/mes, gastos/mes, efectivo inicial, nota)
 PROFESIONES = [
-    ("Maestro/a", "A", 26000, 19000, 30000,
-     "Ingreso bajo, gastos bajos. El que menos necesita para ser libre."),
-    ("Enfermero/a", "B", 38000, 27000, 45000,
+    ("Bibliotecario/a", "A", 26000, 19000, 30000,
+     "Ingreso bajo, gastos bajos. El que menos necesita para independizarse."),
+    ("Fisioterapeuta", "B", 38000, 27000, 45000,
      "Turnos largos, ingreso estable. Ojo con el cansancio y las deudas."),
-    ("Contador/a", "C", 46000, 33000, 60000,
+    ("Asesor/a fiscal", "C", 46000, 33000, 60000,
      "Conoce los números: úsalo a tu favor."),
     ("Diseñador/a gráfico", "D", 34000, 26000, 35000,
      "Ingreso variable por proyectos. Meses buenos y meses flacos."),
-    ("Vendedor/a", "E", 40000, 31000, 40000,
+    ("Agente de viajes", "E", 40000, 31000, 40000,
      "Comisiones altas, ingresos irregulares. Fondo de emergencia YA."),
     ("Chef", "F", 33000, 25000, 30000,
      "Negocio propio en la mira. Cocina rico, cobra mejor."),
-    ("Policía", "G", 36000, 24000, 50000,
+    ("Bombero/a", "G", 36000, 24000, 50000,
      "Pensión y estabilidad. La trampa: sentirse seguro y no invertir."),
-    ("Ingeniero/a de software", "H", 72000, 48000, 110000,
+    ("Programador/a de videojuegos", "H", 72000, 48000, 110000,
      "Buen sueldo, gastos altos. La diferencia se llama estilo de vida."),
-    ("Abogado/a", "I", 80000, 58000, 120000,
+    ("Notario/a", "I", 80000, 58000, 120000,
      "Ingreso alto, deuda de oficina. Cuidado con el 'ya lo merezco'."),
-    ("Médico/a", "J", 95000, 70000, 150000,
+    ("Dentista", "J", 95000, 70000, 150000,
      "El ingreso más alto y la salida más cara. No confundas sueldo con riqueza."),
-    ("Piloto/a", "K", 78000, 60000, 130000,
+    ("Capitán/a de barco", "K", 78000, 60000, 130000,
      "Vives viajando: casa grande, auto grande, flujo pequeño."),
-    ("Dueño/a de negocio", "L", 60000, 45000, 90000,
+    ("Autónomo/a con taller", "L", 60000, 45000, 90000,
      "Tu negocio depende de ti. Construye sistemas o nunca descansas."),
 ]
 
@@ -104,9 +104,9 @@ PEQUENAS = [
 
 # --------------------------------------------------------- OPORTUNIDADES GRANDES
 GRANDES = [
-    ("Apartamento 2 habitaciones", "VIVIENDA", 150000, 30000, 3200,
+    ("Piso de dos dormitorios", "VIVIENDA", 150000, 30000, 3200,
      "Zona con transporte. Inquilino estable desde el primer mes."),
-    ("Casa 3 habitaciones en suburbios", "VIVIENDA", 240000, 48000, 4800,
+    ("Casa adosada con jardín", "VIVIENDA", 240000, 48000, 4800,
      "Familia con hijos, contrato a 2 años."),
     ("Local comercial en esquina", "COMERCIAL", 280000, 84000, 8500,
      "Arrendatario con 10 años en el sector."),
@@ -208,73 +208,65 @@ GUSTOS = [
 
 # --------------------------------------------------------------------- SUEÑOS
 SUENOS = [
-    ("Casa en la montaña", 120000),
-    ("Un año viajando por el mundo", 80000),
-    ("Fundación educativa", 150000),
-    ("Velero para navegar el Caribe", 110000),
-    ("Isla privada (99 años de renta)", 250000),
-    ("Colección de arte", 90000),
-    ("Auto clásico restaurado", 60000),
-    ("Año sabático sin trabajar", 75000),
-    ("Escuela gratuita para tu barrio", 160000),
-    ("Estadio con tu nombre", 250000),
-    ("Rancho con caballos", 200000),
-    ("Empresa que emplee a 50 personas", 180000),
+    ("Biblioteca del barrio", 120000), ("Orquesta juvenil", 80000), ("Fundación de becas", 150000),
+    ("Teatro restaurado", 110000), ("Reserva natural", 250000), ("Museo de la ciudad", 90000),
+    ("Parque con tu nombre", 60000), ("Taller de inventos", 75000), ("Escuela de oficios", 160000),
+    ("Observatorio público", 250000), ("Cooperativa de vivienda", 200000), ("Centro de salud de día", 180000),
 ]
 
 # -------------------------------------------------------------------- TABLERO
 TABLERO = [
-    ("SALIDA", "cobrar", "Cobra tu flujo de caja"),
-    ("Oportunidad pequeña", "peq", "Roba 1 carta"),
-    ("Mercado", "mercado", "Roba 1 carta"),
-    ("Gusto", "gusto", "Gasta o ahorra"),
-    ("Oportunidad pequeña", "peq", "Roba 1 carta"),
-    ("COBRA", "cobrar", "Cobra tu flujo de caja"),
-    ("Oportunidad grande", "grande", "Roba 1 carta"),
-    ("COBRA", "cobrar", "Cobra tu flujo de caja"),
-    ("Oportunidad pequeña", "peq", "Roba 1 carta"),
-    ("Mercado", "mercado", "Roba 1 carta"),
-    ("Oportunidad grande", "grande", "Roba 1 carta"),
-    ("Oportunidad pequeña", "peq", "Roba 1 carta"),
-    ("COBRA", "cobrar", "Cobra tu flujo de caja"),
-    ("Gusto", "gusto", "Gasta o ahorra"),
-    ("Oportunidad pequeña", "peq", "Roba 1 carta"),
-    ("Mercado", "mercado", "Roba 1 carta"),
-    ("Oportunidad grande", "grande", "Roba 1 carta"),
-    ("Oportunidad pequeña", "peq", "Roba 1 carta"),
-    ("COBRA", "cobrar", "Cobra tu flujo de caja"),
-    ("COBRA", "cobrar", "Cobra tu flujo de caja"),
-    ("Oportunidad grande", "grande", "Roba 1 carta"),
-    ("Mercado", "mercado", "Roba 1 carta"),
-    ("Banco / Caridad", "banco", "Préstamo o donación"),
-    ("Oportunidad pequeña", "peq", "Roba 1 carta"),
+    ("SALIDA", "cobrar", "Cobra un mes extra"),
+    ("Ganga", "peq", "Saca 1 carta"),
+    ("Noticias", "mercado", "Saca 1 carta"),
+    ("Capricho", "gusto", "Gasta o ahorra"),
+    ("Ganga", "peq", "Saca 1 carta"),
+    ("NÓMINA", "cobrar", "Cobra un mes extra"),
+    ("Gran proyecto", "grande", "Saca 1 carta"),
+    ("NÓMINA", "cobrar", "Cobra un mes extra"),
+    ("Ganga", "peq", "Saca 1 carta"),
+    ("Noticias", "mercado", "Saca 1 carta"),
+    ("Gran proyecto", "grande", "Saca 1 carta"),
+    ("Ganga", "peq", "Saca 1 carta"),
+    ("NÓMINA", "cobrar", "Cobra un mes extra"),
+    ("Capricho", "gusto", "Gasta o ahorra"),
+    ("Ganga", "peq", "Saca 1 carta"),
+    ("Noticias", "mercado", "Saca 1 carta"),
+    ("Gran proyecto", "grande", "Saca 1 carta"),
+    ("Ganga", "peq", "Saca 1 carta"),
+    ("NÓMINA", "cobrar", "Cobra un mes extra"),
+    ("NÓMINA", "cobrar", "Cobra un mes extra"),
+    ("Gran proyecto", "grande", "Saca 1 carta"),
+    ("Noticias", "mercado", "Saca 1 carta"),
+    ("Banco / Mecenazgo", "banco", "Préstamo o mecenazgo"),
+    ("Ganga", "peq", "Saca 1 carta"),
 ]
 
 VIA = [
-    ("COBRA", "cobrar", "Cobra tu flujo x10"),
-    ("Oportunidad", "peq", "Roba 1 carta"),
-    ("SUEÑO", "sueno", "Compra tu sueño"),
-    ("Mercado", "mercado", "Roba 1 carta"),
-    ("COBRA", "cobrar", "Cobra tu flujo x10"),
-    ("Oportunidad", "peq", "Roba 1 carta"),
-    ("SUEÑO", "sueno", "Compra tu sueño"),
-    ("AUDITORÍA", "banco", "Paga 10% de tu efectivo"),
-    ("COBRA", "cobrar", "Cobra tu flujo x10"),
-    ("Oportunidad", "peq", "Roba 1 carta"),
-    ("SUEÑO", "sueno", "Compra tu sueño"),
-    ("Mercado", "mercado", "Roba 1 carta"),
+    ("DIVIDENDOS", "cobrar", "Cobra tus rentas x3"),
+    ("Proyecto", "peq", "Saca 1 carta"),
+    ("LEGADO", "sueno", "Paga una obra de tu legado"),
+    ("Noticias", "mercado", "Saca 1 carta"),
+    ("DIVIDENDOS", "cobrar", "Cobra tus rentas x3"),
+    ("Proyecto", "peq", "Saca 1 carta"),
+    ("LEGADO", "sueno", "Paga una obra de tu legado"),
+    ("INSPECCIÓN", "banco", "Paga 10% de tu efectivo"),
+    ("DIVIDENDOS", "cobrar", "Cobra tus rentas x3"),
+    ("Proyecto", "peq", "Saca 1 carta"),
+    ("LEGADO", "sueno", "Paga una obra de tu legado"),
+    ("Noticias", "mercado", "Saca 1 carta"),
 ]
 
 # Posiciones en la rejilla 8x6 (columna, fila) con origen arriba a la izquierda.
 # Recorrido horario desde la esquina inferior izquierda.
-RATONERA_POS = [
+BARRIO_POS = [
     (1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6),   # 0-7  fila inferior
     (8, 5), (8, 4), (8, 3), (8, 2),                                    # 8-11 columna derecha
     (8, 1), (7, 1), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1),    # 12-19 fila superior
     (1, 2), (1, 3), (1, 4), (1, 5),                                    # 20-23 columna izquierda
 ]
 
-# Vía Rápida: serpiente de 12 casillas (fila 2 hacia la derecha, fila 3 hacia la izquierda)
+# Distrito Alto: serpiente de 12 casillas (fila 2 hacia la derecha, fila 3 hacia la izquierda)
 VIA_POS = [(c, 2) for c in range(2, 8)] + [(c, 3) for c in range(7, 1, -1)]
 
 # ---------------------------------------------------------------- balance

@@ -1,21 +1,21 @@
 {
  "professions": [
   {
-   "name": "Maestro/a",
+   "name": "Bibliotecario/a",
    "salary": 26000,
    "expenses": 19000,
    "cash": 30000,
-   "note": "Ingreso bajo, gastos bajos. El que menos necesita para ser libre."
+   "note": "Ingreso bajo, gastos bajos. El que menos necesita para independizarse."
   },
   {
-   "name": "Enfermero/a",
+   "name": "Fisioterapeuta",
    "salary": 38000,
    "expenses": 27000,
    "cash": 45000,
    "note": "Turnos largos, ingreso estable. Ojo con el cansancio y las deudas."
   },
   {
-   "name": "Contador/a",
+   "name": "Asesor/a fiscal",
    "salary": 46000,
    "expenses": 33000,
    "cash": 60000,
@@ -29,7 +29,7 @@
    "note": "Ingreso variable por proyectos. Meses buenos y meses flacos."
   },
   {
-   "name": "Vendedor/a",
+   "name": "Agente de viajes",
    "salary": 40000,
    "expenses": 31000,
    "cash": 40000,
@@ -43,42 +43,42 @@
    "note": "Negocio propio en la mira. Cocina rico, cobra mejor."
   },
   {
-   "name": "Policía",
+   "name": "Bombero/a",
    "salary": 36000,
    "expenses": 24000,
    "cash": 50000,
    "note": "Pensión y estabilidad. La trampa: sentirse seguro y no invertir."
   },
   {
-   "name": "Ingeniero/a de software",
+   "name": "Programador/a de videojuegos",
    "salary": 72000,
    "expenses": 48000,
    "cash": 110000,
    "note": "Buen sueldo, gastos altos. La diferencia se llama estilo de vida."
   },
   {
-   "name": "Abogado/a",
+   "name": "Notario/a",
    "salary": 80000,
    "expenses": 58000,
    "cash": 120000,
    "note": "Ingreso alto, deuda de oficina. Cuidado con el 'ya lo merezco'."
   },
   {
-   "name": "Médico/a",
+   "name": "Dentista",
    "salary": 95000,
    "expenses": 70000,
    "cash": 150000,
    "note": "El ingreso más alto y la salida más cara. No confundas sueldo con riqueza."
   },
   {
-   "name": "Piloto/a",
+   "name": "Capitán/a de barco",
    "salary": 78000,
    "expenses": 60000,
    "cash": 130000,
    "note": "Vives viajando: casa grande, auto grande, flujo pequeño."
   },
   {
-   "name": "Dueño/a de negocio",
+   "name": "Autónomo/a con taller",
    "salary": 60000,
    "expenses": 45000,
    "cash": 90000,
@@ -345,7 +345,7 @@
  ],
  "big": [
   {
-   "name": "Apartamento 2 habitaciones",
+   "name": "Piso de dos dormitorios",
    "tag": "VIVIENDA",
    "cost": 150000,
    "down": 30000,
@@ -353,7 +353,7 @@
    "note": "Zona con transporte. Inquilino estable desde el primer mes."
   },
   {
-   "name": "Casa 3 habitaciones en suburbios",
+   "name": "Casa adosada con jardín",
    "tag": "VIVIENDA",
    "cost": 240000,
    "down": 48000,
@@ -835,51 +835,51 @@
  ],
  "dreams": [
   {
-   "name": "Casa en la montaña",
+   "name": "Biblioteca del barrio",
    "cost": 120000
   },
   {
-   "name": "Un año viajando por el mundo",
+   "name": "Orquesta juvenil",
    "cost": 80000
   },
   {
-   "name": "Fundación educativa",
+   "name": "Fundación de becas",
    "cost": 150000
   },
   {
-   "name": "Velero para navegar el Caribe",
+   "name": "Teatro restaurado",
    "cost": 110000
   },
   {
-   "name": "Isla privada (99 años de renta)",
+   "name": "Reserva natural",
    "cost": 250000
   },
   {
-   "name": "Colección de arte",
+   "name": "Museo de la ciudad",
    "cost": 90000
   },
   {
-   "name": "Auto clásico restaurado",
+   "name": "Parque con tu nombre",
    "cost": 60000
   },
   {
-   "name": "Año sabático sin trabajar",
+   "name": "Taller de inventos",
    "cost": 75000
   },
   {
-   "name": "Escuela gratuita para tu barrio",
+   "name": "Escuela de oficios",
    "cost": 160000
   },
   {
-   "name": "Estadio con tu nombre",
+   "name": "Observatorio público",
    "cost": 250000
   },
   {
-   "name": "Rancho con caballos",
+   "name": "Cooperativa de vivienda",
    "cost": 200000
   },
   {
-   "name": "Empresa que emplee a 50 personas",
+   "name": "Centro de salud de día",
    "cost": 180000
   }
  ],
@@ -887,20 +887,20 @@
   {
    "name": "SALIDA",
    "kind": "cobrar",
-   "sub": "Cobra tu flujo de caja"
+   "sub": "Cobra un mes extra"
   },
   {
-   "name": "Oportunidad pequeña",
+   "name": "Ganga",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Mercado",
+   "name": "Noticias",
    "kind": "mercado",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Gusto",
+   "name": "Capricho",
    "kind": "gusto",
    "sub": "Gasta o ahorra"
   },
@@ -910,34 +910,34 @@
    "sub": "Paga el 15 % de tus ingresos del mes"
   },
   {
-   "name": "Oportunidad pequeña",
+   "name": "Ganga",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Oportunidad grande",
+   "name": "Gran proyecto",
    "kind": "grande",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Mercado",
+   "name": "Noticias",
    "kind": "mercado",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Oportunidad pequeña",
+   "name": "Ganga",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Banco / Caridad",
+   "name": "Banco / Mecenazgo",
    "kind": "banco",
-   "sub": "Préstamo o donación"
+   "sub": "Préstamo o mecenazgo"
   },
   {
-   "name": "Oportunidad pequeña",
+   "name": "Ganga",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
    "name": "Formación",
@@ -945,24 +945,24 @@
    "sub": "Paga $1.000: tiras 2 dados 3 turnos"
   },
   {
-   "name": "COBRA",
+   "name": "NÓMINA",
    "kind": "cobrar",
-   "sub": "Cobra tu flujo de caja"
+   "sub": "Cobra un mes extra"
   },
   {
-   "name": "Oportunidad grande",
+   "name": "Gran proyecto",
    "kind": "grande",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Mercado",
+   "name": "Noticias",
    "kind": "mercado",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Oportunidad pequeña",
+   "name": "Ganga",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
    "name": "Imprevisto",
@@ -970,44 +970,44 @@
    "sub": "Gasto inesperado (un seguro lo cubre)"
   },
   {
-   "name": "Oportunidad pequeña",
+   "name": "Ganga",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Gusto",
+   "name": "Capricho",
    "kind": "gusto",
    "sub": "Gasta o ahorra"
   },
   {
-   "name": "Oportunidad grande",
+   "name": "Gran proyecto",
    "kind": "grande",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Mercado",
+   "name": "Noticias",
    "kind": "mercado",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Oportunidad pequeña",
+   "name": "Ganga",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "COBRA",
+   "name": "NÓMINA",
    "kind": "cobrar",
-   "sub": "Cobra tu flujo de caja"
+   "sub": "Cobra un mes extra"
   },
   {
-   "name": "Banco / Caridad",
+   "name": "Banco / Mecenazgo",
    "kind": "banco",
-   "sub": "Préstamo o donación"
+   "sub": "Préstamo o mecenazgo"
   },
   {
-   "name": "Oportunidad grande",
+   "name": "Gran proyecto",
    "kind": "grande",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
    "name": "Imprevisto",
@@ -1015,19 +1015,19 @@
    "sub": "Gasto inesperado (un seguro lo cubre)"
   },
   {
-   "name": "Oportunidad pequeña",
+   "name": "Ganga",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "Gusto",
+   "name": "Capricho",
    "kind": "gusto",
    "sub": "Gasta o ahorra"
   },
   {
-   "name": "COBRA",
+   "name": "NÓMINA",
    "kind": "cobrar",
-   "sub": "Cobra tu flujo de caja"
+   "sub": "Cobra un mes extra"
   },
   {
    "name": "Hacienda",
@@ -1035,96 +1035,96 @@
    "sub": "Paga el 15 % de tus ingresos del mes"
   },
   {
-   "name": "Oportunidad pequeña",
+   "name": "Ganga",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "COBRA",
+   "name": "NÓMINA",
    "kind": "cobrar",
-   "sub": "Cobra tu flujo de caja"
+   "sub": "Cobra un mes extra"
   }
  ],
  "via": [
   {
-   "name": "COBRA",
+   "name": "DIVIDENDOS",
    "kind": "cobrar",
-   "sub": "Cobra tu flujo x10"
+   "sub": "Cobra tus rentas x3"
   },
   {
-   "name": "Oportunidad",
+   "name": "Proyecto",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "SUEÑO",
+   "name": "LEGADO",
    "kind": "sueno",
-   "sub": "Compra tu sueño"
+   "sub": "Paga una obra de tu legado"
   },
   {
-   "name": "Mercado",
+   "name": "Noticias",
    "kind": "mercado",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "COBRA",
+   "name": "DIVIDENDOS",
    "kind": "cobrar",
-   "sub": "Cobra tu flujo x10"
+   "sub": "Cobra tus rentas x3"
   },
   {
-   "name": "Oportunidad",
+   "name": "Proyecto",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "SUEÑO",
+   "name": "LEGADO",
    "kind": "sueno",
-   "sub": "Compra tu sueño"
+   "sub": "Paga una obra de tu legado"
   },
   {
-   "name": "AUDITORÍA",
+   "name": "INSPECCIÓN",
    "kind": "banco",
    "sub": "Paga 10% de tu efectivo"
   },
   {
-   "name": "COBRA",
+   "name": "DIVIDENDOS",
    "kind": "cobrar",
-   "sub": "Cobra tu flujo x10"
+   "sub": "Cobra tus rentas x3"
   },
   {
-   "name": "Oportunidad",
+   "name": "Proyecto",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "SUEÑO",
+   "name": "LEGADO",
    "kind": "sueno",
-   "sub": "Compra tu sueño"
+   "sub": "Paga una obra de tu legado"
   },
   {
-   "name": "Mercado",
+   "name": "Noticias",
    "kind": "mercado",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "COBRA",
+   "name": "DIVIDENDOS",
    "kind": "cobrar",
-   "sub": "Cobra tu flujo x10"
+   "sub": "Cobra tus rentas x3"
   },
   {
-   "name": "Oportunidad",
+   "name": "Proyecto",
    "kind": "peq",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   },
   {
-   "name": "SUEÑO",
+   "name": "LEGADO",
    "kind": "sueno",
-   "sub": "Compra tu sueño"
+   "sub": "Paga una obra de tu legado"
   },
   {
-   "name": "Mercado",
+   "name": "Noticias",
    "kind": "mercado",
-   "sub": "Roba 1 carta"
+   "sub": "Saca 1 carta"
   }
  ],
  "ratoneraPos": [
