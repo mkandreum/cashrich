@@ -46,53 +46,60 @@ logre que sus activos paguen su vida y compre su sueño.
 
 ---
 
-## 2. Versión digital (misma Wi-Fi)
+## 2. CashRich: la versión digital online
 
-Un servidor local sirve el tablero y los móviles hacen de control. No necesita internet
-ni instalar nada en los teléfonos.
+Web en **https://cashrich.xyoncloud.win**, una APK de móvil y una APK de TV.
 
-### Arrancar
+| Cómo jugar | Qué hace falta |
+|---|---|
+| **Con TV** | Abre la APK de TV (o `/tv` en un navegador). Crea la mesa sola y muestra un QR. Cada jugador lo escanea y juega en la web desde su móvil, sin instalar nada. La TV no se toca. |
+| **Sin TV** | Web o APK de móvil: crea una mesa y comparte el enlace o el código. Cada uno ve el tablero 3D y sus controles. |
 
-- Doble clic en `web/iniciar.bat` (Windows). Se abre el tablero en el navegador.
-- O desde la terminal:
+El primero en entrar a la mesa es el **admin**: elige dificultad y duración, empieza la partida, puede saltar a quien no responda y lanzar otra partida.
+
+### Reglas de la versión digital
+
+Además de las reglas del juego de mesa:
+
+- **Economía viva.** Expansión, burbuja, recesión y recuperación se suceden. Mueven el precio de inmuebles, bolsa y negocios, las rentas y el tipo de interés.
+- **Precios variables.** Cada oferta cuesta según esté su sector, pero su renta no cambia: en recesión todo renta más por lo que pagas.
+- **Apalancamiento.** Al vender cobras el valor de mercado menos la hipoteca. En una crisis puedes tener que poner dinero para deshacerte de un activo.
+- **Crédito.** El interés se fija el día que pides el préstamo: pedir en recuperación sale mucho más barato que en recesión.
+- **Subastas a ciegas.** Si pasas de una oferta, los rivales pujan 20 segundos con su efectivo y tú te quedas lo que paguen por encima del precio.
+- **Operaciones.** En tu turno puedes vender a precio de mercado o mejorar un activo (cuesta el 25 % de su valor; renta un 35 % más y vale un 25 % más).
+- **Bonos de cartera.** Tres activos de un sector: +20 % en sus rentas. Uno de cada sector: +10 % en todas.
+- **Dificultad.** Fácil, normal o difícil (menos efectivo, crédito más caro, mercados más violentos, meta de rentas del 125 % y sueños un 50 % más caros).
+- **Duración.** Sin límite gana quien compre su sueño; con 12, 20 o 30 rondas gana el mayor patrimonio si nadie lo compra antes.
+
+### Desplegar en Coolify
+
+1. Nuevo recurso → repositorio `mkandreum/cashrich`, rama `main`, tipo **Docker Compose** (usa `docker-compose.yml`).
+2. Asigna el dominio `https://cashrich.xyoncloud.win` al servicio `app` (puerto 3000).
+3. Activa el despliegue automático. No necesita variables de entorno. Las mesas se guardan en el volumen `flujo-data` y sobreviven a cada despliegue.
+
+### APK
+
+GitHub Actions compila `CashRich-movil.apk` y `CashRich-tv.apk` en cada cambio de `android/`; una etiqueta `v1.0.0` las publica en una Release. Para que las versiones se instalen unas encima de otras, añade los secretos `KEYSTORE_B64`, `STORE_PASSWORD`, `KEY_ALIAS` y `KEY_PASSWORD`.
+
+### Desarrollo
 
 ```
 cd web
-node server.js
+npm install
+npm run dev      # servidor y cliente con recarga
+npm test         # reglas del juego
 ```
-
-Necesitas **Node.js** (gratis, nodejs.org). El servidor escucha en el puerto **3000**.
-
-### Jugar
-
-1. En la pantalla grande (TV o portátil) se ve el tablero y un **código QR**.
-2. Cada jugador escanea el QR o escribe en su móvil la dirección que aparece
-   (`http://192.168.x.x:3000/p`) y pone su nombre.
-3. Cuando están todos, el anfitrión pulsa **Empezar partida**.
-4. En el móvil cada uno tira el dado, decide comprar o pasar, pide préstamos y ve sus números.
-
-Si el QR no conecta, revisa que el móvil esté en la misma Wi-Fi y prueba la dirección
-alternativa que aparece bajo el código.
-
-### Qué hace el servidor
-
-- Reparte profesiones al azar y lleva el estado financiero de todos.
-- Resuelve cartas, mercado, préstamos, inflación, auditorías y quiebras.
-- Sincroniza todo en vivo (SSE), sin dependencias externas.
-
-### Archivos
 
 ```
 web/
-  server.js        servidor (Node, sin dependencias)
+  server/          motor del juego, mesas y API en tiempo real (SSE)
+  src/             cliente React; el tablero 3D está en lib/scene3d.ts
+  shared/          modelos 3D compartidos por la web y las APK
   data.json        cartas y tablero exportados del juego de mesa
-  iniciar.bat      lanzador para Windows
-  public/
-    host.html      tablero para la pantalla grande
-    play.html      control para el móvil
-    vendor/qrcode.js
-  dev/             scripts de prueba (simulan partidas completas)
+android/           app nativa en Kotlin, Compose y OpenGL
 ```
+
+Tras cambiar `data.json` o los iconos, regenera el código de Android con `node android/tools/gen-assets.mjs <node_modules con lucide-react y opentype.js>`.
 
 ---
 

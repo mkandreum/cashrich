@@ -1,8 +1,12 @@
 __pycache__/
 *.pyc
-node_modules/
+node_modules
 out/
 *.zip
 Thumbs.db
 .DS_Store
 src/*.html
+dist/
+data/
+.claude/
+.cr-data/

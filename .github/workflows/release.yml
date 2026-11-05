@@ -1,0 +1,67 @@
+name: APK
+
+# Compila las dos APK (móvil y TV). Una etiqueta como v1.2.0 las publica en una Release.
+on:
+  push:
+    branches: [main]
+    paths: ['android/**', 'web/shared/**', '.github/workflows/release.yml']
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses >/dev/null 2>&1 || true
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Con los secretos, las versiones nuevas se instalan encima de las anteriores.
+      - name: Prepare signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+            echo "KEYSTORE_PATH=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Sin el secreto KEYSTORE_B64 cada compilación lleva una firma distinta y no actualiza sobre la anterior."
+          fi
+
+      - name: Build
+        env:
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleMovilRelease :app:assembleTvRelease --console=plain
+          cp app/build/outputs/apk/movil/release/app-movil-release.apk ../CashRich-movil.apk
+          cp app/build/outputs/apk/tv/release/app-tv-release.apk ../CashRich-tv.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CashRich-apk
+          path: CashRich-*.apk
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: CashRich-*.apk
+          generate_release_notes: true

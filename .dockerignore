@@ -1,0 +1,9 @@
+.git
+.github
+*.pdf
+docs
+src
+web/node_modules
+web/dist
+web/data/
+*.log

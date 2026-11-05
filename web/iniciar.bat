@@ -1,20 +1,19 @@
 @echo off
-title FLUJO LIBRE - servidor local
+title CashRich - servidor local
 cd /d "%~dp0"
 
 where node >nul 2>nul
 if errorlevel 1 (
   echo.
-  echo  Necesitas Node.js para jugar la version digital.
-  echo  Descargalo gratis en https://nodejs.org
+  echo  Necesitas Node.js: https://nodejs.org
   echo.
   pause
   exit /b
 )
 
-echo.
-echo  Abriendo el tablero en el navegador...
-start "" cmd /c "timeout /t 2 >nul && start http://127.0.0.1:3000"
-node server.js
-
+if not exist node_modules call npm install
+if not exist dist\server.cjs call npm run build
+start "" cmd /c "timeout /t 2 >nul && start http://127.0.0.1:3000/tv"
+set NODE_ENV=production
+node dist\server.cjs
 pause

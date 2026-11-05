@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generado por tools/gen-assets.mjs -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+  <path android:fillColor="#FFC98A0C" android:strokeColor="#FF1D1A33" android:strokeWidth="3" android:pathData="M54 26a27 27 0 1 0 0.01 0z" android:translateY="3"/>
+  <path android:fillColor="#FFFFC83D" android:strokeColor="#FF1D1A33" android:strokeWidth="3" android:pathData="M54 25a27 27 0 1 0 0.01 0z"/>
+  <path android:fillColor="#FF1D1A33" android:pathData="M55.53 32.08L55.53 35.05Q59.38 35.20 62.19 36.11Q65 37.02 65 38.84Q65 40.45 63.93 43.11Q62.87 45.76 62.45 45.91Q58.08 44.09 55.53 43.89L55.53 49.76Q66.45 50.18 66.45 60.27Q66.45 65 63.75 68.38Q61.05 71.76 55.53 72.33L55.53 75.92Q55.53 76.85 54.99 77.17Q54.44 77.48 54.08 77.48L53.35 77.27Q52.62 76.85 52.62 75.92L52.62 72.49Q48.25 72.38 44.90 70.93Q41.55 69.47 41.55 67.23Q41.55 64.32 43.31 61.36Q43.47 61.05 43.73 60.68Q47.94 63.23 52.62 63.54L52.62 57.82Q41.55 57.15 41.55 46.49Q41.55 41.81 44.51 38.79Q47.47 35.77 52.62 35.15L52.62 32.08Q52.62 31.15 53.17 30.83Q53.71 30.52 54.08 30.52L54.81 30.73Q55.53 31.15 55.53 32.08M59.23 60.01Q59.23 58.81 58.42 58.37Q57.61 57.93 55.53 57.82L55.53 63.44Q59.23 62.81 59.23 60.01M49.45 47.06Q49.45 49.24 52.62 49.61L52.62 43.94Q49.45 44.46 49.45 47.06"/>
+</vector>
