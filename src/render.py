@@ -9,13 +9,13 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(os.path.dirname(AQUI), "out")
 
 TARGETS = [
-    ("reglas", "FlujoLibre-01-Reglas"),
-    ("tablero", "FlujoLibre-02-Tablero-A3"),
-    ("cartas", "FlujoLibre-03-Cartas"),
-    ("hoja-jugador", "FlujoLibre-04-Hoja-Estado-Financiero"),
-    ("dinero", "FlujoLibre-05-Dinero"),
-    ("fichas", "FlujoLibre-06-Fichas-y-Dado"),
-    ("ayuda", "FlujoLibre-07-Ayuda-de-mesa"),
+    ("reglas", "CashRich-01-Reglas"),
+    ("tablero", "CashRich-02-Tablero-A3"),
+    ("cartas", "CashRich-03-Cartas"),
+    ("hoja-jugador", "CashRich-04-Hoja-Estado-Financiero"),
+    ("dinero", "CashRich-05-Dinero"),
+    ("fichas", "CashRich-06-Fichas-y-Dado"),
+    ("ayuda", "CashRich-07-Ayuda-de-mesa"),
 ]
 
 

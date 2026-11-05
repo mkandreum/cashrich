@@ -1,4 +1,4 @@
-# FLUJO LIBRE — juego de mesa imprimible + versión digital
+# CashRich — juego de mesa imprimible + versión digital
 
 Juego original de educación financiera para **2 a 6 jugadores** (90–120 min).
 Cada jugador empieza con una profesión, un sueldo y una lista de gastos. Gana quien
@@ -7,7 +7,7 @@ logre que sus activos paguen su vida y compre su sueño.
 > Es un juego **original**, inspirado en el género de juegos de libertad financiera.
 > No es una copia ni tiene relación con *Cashflow®* ni con sus autores.
 
-![Tablero de FLUJO LIBRE](docs/tablero.png)
+![Tablero de CashRich](docs/tablero.png)
 
 <p align="center">
   <img src="docs/digital.png" alt="Tablero digital" width="68%">
@@ -20,13 +20,13 @@ logre que sus activos paguen su vida y compre su sueño.
 
 | Archivo | Qué es | Cómo imprimir |
 |---|---|---|
-| `FlujoLibre-01-Reglas.pdf` | Reglas completas (4 páginas) | A4, una cara |
-| `FlujoLibre-02-Tablero-A3.pdf` | Tablero | **A3 horizontal**, 100 % |
-| `FlujoLibre-03-Cartas.pdf` | 119 cartas (14 hojas) | A4, una cara, **100 %** |
-| `FlujoLibre-04-Hoja-Estado-Financiero.pdf` | Hoja de jugador + bitácora | A4, **una por jugador** |
-| `FlujoLibre-05-Dinero.pdf` | Billetes del juego | A4, **2 copias** |
-| `FlujoLibre-06-Fichas-y-Dado.pdf` | 6 fichas, dado de papel y checklist | A4, una cara |
-| `FlujoLibre-07-Ayuda-de-mesa.pdf` | Chuleta de turno (2 por hoja) | A4, una cara |
+| `CashRich-01-Reglas.pdf` | Reglas completas y modo avanzado (5 páginas) | A4, una cara |
+| `CashRich-02-Tablero-A3.pdf` | Tablero | **A3 horizontal**, 100 % |
+| `CashRich-03-Cartas.pdf` | 119 cartas con reverso (28 páginas) | A4, **doble cara por el borde largo, 100 %** |
+| `CashRich-04-Hoja-Estado-Financiero.pdf` | Hoja de jugador + bitácora | A4, **una por jugador** |
+| `CashRich-05-Dinero.pdf` | Billetes del juego | A4, **2 copias** |
+| `CashRich-06-Fichas-y-Dado.pdf` | 6 fichas redondas o de pie, dado con pestañas y checklist | A4, una cara |
+| `CashRich-07-Ayuda-de-mesa.pdf` | Chuleta de turno (2 por hoja) | A4, una cara |
 
 ### Ajustes de impresión
 
@@ -109,7 +109,7 @@ Fuentes en `src/` (Python + HTML/CSS, sin dependencias):
 
 ```
 cd src
-python build_print.py    # genera los HTML de impresión
+python print_cashrich.py # genera los HTML de impresión
 python render.py         # los convierte a PDF (usa Chrome)
 python export_json.py    # actualiza web/data.json para la versión digital
 ```

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Datos del juego FLUJO LIBRE - juego original de educacion financiera."""
 
-JUEGO = "FLUJO LIBRE"
+JUEGO = "CashRich"
 LEMA = "El juego de la libertad financiera"
 
 # ---------------------------------------------------------------- PROFESIONES
