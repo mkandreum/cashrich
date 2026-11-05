@@ -296,6 +296,8 @@ private fun Lobby(vm: GameViewModel, room: Snapshot, tv: Boolean) {
     val context = LocalContext.current
     val qr = remember(vm.inviteLink) { qrBitmap(vm.inviteLink).asImageBitmap() }
     if (tv) {
+        // Con jugadores en la mesa, Atrás pide confirmación y abre otra mesa; con la mesa vacía sale de la app
+        BackHandler(enabled = room.players.isNotEmpty()) { vm.tvBack() }
         // En la TV todo cabe a la vista: nada de scroll ni de botones
         Column(Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Logo(44.sp)
@@ -433,6 +435,7 @@ private fun narration(room: Snapshot, mv: DiceMotion?) = if (mv != null) (if (mv
 @Composable
 private fun TvGame(vm: GameViewModel, room: Snapshot) {
     val mv = vm.motion
+    BackHandler { vm.tvBack() }
     Box(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxSize().padding(10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(18.dp))) {
@@ -591,7 +594,7 @@ private fun Victory(vm: GameViewModel, room: Snapshot, tv: Boolean) {
                 }
             }
             when {
-                tv -> T("El admin puede empezar otra partida desde su móvil.", color = C.Cream.copy(alpha = 0.85f), weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
+                tv -> T("El admin puede empezar otra partida desde su móvil. Atrás dos veces abre una mesa nueva.", color = C.Cream.copy(alpha = 0.85f), weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
                 vm.session?.playerId == room.adminId -> Chunky("Otra partida", Modifier.fillMaxWidth().padding(top = 10.dp), Tone.Coral, giant = true) { vm.send("reset") }
                 else -> T("El admin puede empezar otra partida.", color = C.Cream.copy(alpha = 0.85f), weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
             }

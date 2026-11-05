@@ -146,6 +146,21 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    private var lastBack = 0L
+
+    /** Atrás en la TV: la primera vez avisa, la segunda cierra esta mesa y abre una nueva con otro QR. */
+    fun tvBack() {
+        val now = System.currentTimeMillis()
+        if (now - lastBack < 2500) {
+            lastBack = 0
+            leave()
+            startAsTv()
+        } else {
+            lastBack = now
+            showToast("Pulsa Atrás otra vez para cerrar la mesa")
+        }
+    }
+
     private fun showToast(text: String) {
         toast = text
         toastJob?.cancel()
