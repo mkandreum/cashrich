@@ -1,0 +1,1218 @@
+{
+ "professions": [
+  {
+   "name": "Maestro/a",
+   "salary": 26000,
+   "expenses": 19000,
+   "cash": 30000,
+   "note": "Ingreso bajo, gastos bajos. El que menos necesita para ser libre."
+  },
+  {
+   "name": "Enfermero/a",
+   "salary": 38000,
+   "expenses": 27000,
+   "cash": 45000,
+   "note": "Turnos largos, ingreso estable. Ojo con el cansancio y las deudas."
+  },
+  {
+   "name": "Contador/a",
+   "salary": 46000,
+   "expenses": 33000,
+   "cash": 60000,
+   "note": "Conoce los números: úsalo a tu favor."
+  },
+  {
+   "name": "Diseñador/a gráfico",
+   "salary": 34000,
+   "expenses": 26000,
+   "cash": 35000,
+   "note": "Ingreso variable por proyectos. Meses buenos y meses flacos."
+  },
+  {
+   "name": "Vendedor/a",
+   "salary": 40000,
+   "expenses": 31000,
+   "cash": 40000,
+   "note": "Comisiones altas, ingresos irregulares. Fondo de emergencia YA."
+  },
+  {
+   "name": "Chef",
+   "salary": 33000,
+   "expenses": 25000,
+   "cash": 30000,
+   "note": "Negocio propio en la mira. Cocina rico, cobra mejor."
+  },
+  {
+   "name": "Policía",
+   "salary": 36000,
+   "expenses": 24000,
+   "cash": 50000,
+   "note": "Pensión y estabilidad. La trampa: sentirse seguro y no invertir."
+  },
+  {
+   "name": "Ingeniero/a de software",
+   "salary": 72000,
+   "expenses": 48000,
+   "cash": 110000,
+   "note": "Buen sueldo, gastos altos. La diferencia se llama estilo de vida."
+  },
+  {
+   "name": "Abogado/a",
+   "salary": 80000,
+   "expenses": 58000,
+   "cash": 120000,
+   "note": "Ingreso alto, deuda de oficina. Cuidado con el 'ya lo merezco'."
+  },
+  {
+   "name": "Médico/a",
+   "salary": 95000,
+   "expenses": 70000,
+   "cash": 150000,
+   "note": "El ingreso más alto y la salida más cara. No confundas sueldo con riqueza."
+  },
+  {
+   "name": "Piloto/a",
+   "salary": 78000,
+   "expenses": 60000,
+   "cash": 130000,
+   "note": "Vives viajando: casa grande, auto grande, flujo pequeño."
+  },
+  {
+   "name": "Dueño/a de negocio",
+   "salary": 60000,
+   "expenses": 45000,
+   "cash": 90000,
+   "note": "Tu negocio depende de ti. Construye sistemas o nunca descansas."
+  }
+ ],
+ "small": [
+  {
+   "name": "Fondo índice global",
+   "tag": "BOLSA",
+   "cost": 30000,
+   "down": 30000,
+   "flow": 220,
+   "note": "Diversificación automática. Aburrido y efectivo."
+  },
+  {
+   "name": "Acciones de banco regional",
+   "tag": "BOLSA",
+   "cost": 45000,
+   "down": 45000,
+   "flow": 390,
+   "note": "Dividendo trimestral. Revisa que el banco sea sólido."
+  },
+  {
+   "name": "Acciones de tecnológica",
+   "tag": "BOLSA",
+   "cost": 60000,
+   "down": 60000,
+   "flow": 220,
+   "note": "Poco dividendo, mucha expectativa. Se vende en el Mercado."
+  },
+  {
+   "name": "Bono corporativo",
+   "tag": "RENTA FIJA",
+   "cost": 50000,
+   "down": 50000,
+   "flow": 450,
+   "note": "Renta conocida. El riesgo es que la empresa pague."
+  },
+  {
+   "name": "CDT a 12 meses",
+   "tag": "RENTA FIJA",
+   "cost": 40000,
+   "down": 40000,
+   "flow": 340,
+   "note": "Casi sin riesgo, casi sin emoción."
+  },
+  {
+   "name": "Fondo de dividendos",
+   "tag": "BOLSA",
+   "cost": 55000,
+   "down": 55000,
+   "flow": 570,
+   "note": "Cuatro empresas que reparten cada mes."
+  },
+  {
+   "name": "Acciones de energética",
+   "tag": "BOLSA",
+   "cost": 38000,
+   "down": 38000,
+   "flow": 390,
+   "note": "Regulada y estable. El precio se mueve lento."
+  },
+  {
+   "name": "Crowdfunding inmobiliario",
+   "tag": "COLECTIVO",
+   "cost": 25000,
+   "down": 25000,
+   "flow": 280,
+   "note": "Muchos pequeños prestamistas, un solo edificio."
+  },
+  {
+   "name": "Máquina expendedora",
+   "tag": "NEGOCIO",
+   "cost": 18000,
+   "down": 18000,
+   "flow": 480,
+   "note": "La compras, la surtes, ella trabaja de noche."
+  },
+  {
+   "name": "Carrito de café",
+   "tag": "NEGOCIO",
+   "cost": 22000,
+   "down": 15000,
+   "flow": 520,
+   "note": "Te prestan el 30%. El café se acaba, la deuda no."
+  },
+  {
+   "name": "Alquiler de bicicletas",
+   "tag": "NEGOCIO",
+   "cost": 30000,
+   "down": 20000,
+   "flow": 600,
+   "note": "Temporada alta en verano. Guarda para el invierno."
+  },
+  {
+   "name": "Marca de diseño freelance",
+   "tag": "SERVICIO",
+   "cost": 12000,
+   "down": 12000,
+   "flow": 390,
+   "note": "Vendes tu tiempo. Escala solo si contratas ayuda."
+  },
+  {
+   "name": "Venta por catálogo",
+   "tag": "NEGOCIO",
+   "cost": 15000,
+   "down": 10000,
+   "flow": 360,
+   "note": "Comisión por cada venta. Tu red es el activo."
+  },
+  {
+   "name": "Fotografía de eventos",
+   "tag": "SERVICIO",
+   "cost": 20000,
+   "down": 14000,
+   "flow": 570,
+   "note": "Equipo propio. Fines de semana ocupados."
+  },
+  {
+   "name": "Curso online grabado",
+   "tag": "DIGITAL",
+   "cost": 10000,
+   "down": 10000,
+   "flow": 270,
+   "note": "Lo grabas una vez, se vende mil veces."
+  },
+  {
+   "name": "Huerto hidropónico",
+   "tag": "NEGOCIO",
+   "cost": 28000,
+   "down": 18000,
+   "flow": 540,
+   "note": "Lechugas frescas a domicilio. Agua y luz controladas."
+  },
+  {
+   "name": "Fondo de bonos emergentes",
+   "tag": "RENTA FIJA",
+   "cost": 35000,
+   "down": 35000,
+   "flow": 440,
+   "note": "Más rendimiento, más riesgo país."
+  },
+  {
+   "name": "Acciones de retail",
+   "tag": "BOLSA",
+   "cost": 42000,
+   "down": 42000,
+   "flow": 450,
+   "note": "Depende del consumo. En crisis, sufre."
+  },
+  {
+   "name": "Fondo de oro",
+   "tag": "PROTECCIÓN",
+   "cost": 48000,
+   "down": 48000,
+   "flow": 0,
+   "note": "No produce flujo: produce calma. Se vende en el Mercado."
+  },
+  {
+   "name": "ETF de cripto regulada",
+   "tag": "VOLÁTIL",
+   "cost": 30000,
+   "down": 30000,
+   "flow": 0,
+   "note": "Sin flujo, con mucha montaña rusa. Solo dinero que puedas perder."
+  },
+  {
+   "name": "Royalties de una canción",
+   "tag": "REGALÍAS",
+   "cost": 26000,
+   "down": 26000,
+   "flow": 480,
+   "note": "Cada reproducción paga. Para siempre, mientras suene."
+  },
+  {
+   "name": "Participación en app de presupuesto",
+   "tag": "DIGITAL",
+   "cost": 32000,
+   "down": 24000,
+   "flow": 630,
+   "note": "5% del negocio. Revisa cuántos usuarios pagan."
+  },
+  {
+   "name": "Lavandería (sociedad)",
+   "tag": "NEGOCIO",
+   "cost": 45000,
+   "down": 25000,
+   "flow": 1170,
+   "note": "Socio operador, tú pones el capital."
+  },
+  {
+   "name": "Food truck (sociedad)",
+   "tag": "NEGOCIO",
+   "cost": 55000,
+   "down": 30000,
+   "flow": 1420,
+   "note": "Rueda, vende y no se queda quieto."
+  },
+  {
+   "name": "Vending en oficinas",
+   "tag": "NEGOCIO",
+   "cost": 34000,
+   "down": 20000,
+   "flow": 930,
+   "note": "Tres máquinas en un edificio lleno de gente con hambre."
+  },
+  {
+   "name": "Marca de clases particulares",
+   "tag": "SERVICIO",
+   "cost": 8000,
+   "down": 8000,
+   "flow": 270,
+   "note": "Empiezas tú, luego contratas profesores."
+  },
+  {
+   "name": "Fondo de infraestructura",
+   "tag": "RENTA FIJA",
+   "cost": 52000,
+   "down": 52000,
+   "flow": 510,
+   "note": "Peajes y aeropuertos. Flujo lento y seguro."
+  },
+  {
+   "name": "Préstamo a un familiar (10%)",
+   "tag": "RIESGO",
+   "cost": 20000,
+   "down": 20000,
+   "flow": 380,
+   "note": "Papel firmado y plan de pago. Sin eso, es un regalo."
+  },
+  {
+   "name": "Equipo para alquilar",
+   "tag": "NEGOCIO",
+   "cost": 24000,
+   "down": 16000,
+   "flow": 630,
+   "note": "Andamios, sonido, sillas: alguien siempre lo necesita."
+  },
+  {
+   "name": "Cuota de franquicia de limpieza",
+   "tag": "FRANQUICIA",
+   "cost": 40000,
+   "down": 28000,
+   "flow": 1140,
+   "note": "Marca conocida, regalías incluidas."
+  },
+  {
+   "name": "Oferta de un amigo: triplica tu dinero en 3 meses",
+   "tag": "DUDOSA",
+   "cost": 20000,
+   "down": 20000,
+   "flow": 0,
+   "note": "Sin contrato, sin garantía, sin flujo. ¿Le prestas?"
+  },
+  {
+   "name": "Curso para invertir sin dinero",
+   "tag": "DUDOSA",
+   "cost": 5000,
+   "down": 5000,
+   "flow": 0,
+   "note": "Cuesta poco y enseña menos. Pero algo aprendes."
+  }
+ ],
+ "big": [
+  {
+   "name": "Apartamento 2 habitaciones",
+   "tag": "VIVIENDA",
+   "cost": 150000,
+   "down": 30000,
+   "flow": 6400,
+   "note": "Zona con transporte. Inquilino estable desde el primer mes."
+  },
+  {
+   "name": "Casa 3 habitaciones en suburbios",
+   "tag": "VIVIENDA",
+   "cost": 240000,
+   "down": 48000,
+   "flow": 9600,
+   "note": "Familia con hijos, contrato a 2 años."
+  },
+  {
+   "name": "Local comercial en esquina",
+   "tag": "COMERCIAL",
+   "cost": 280000,
+   "down": 84000,
+   "flow": 17000,
+   "note": "Arrendatario con 10 años en el sector."
+  },
+  {
+   "name": "Dúplex (dos rentas)",
+   "tag": "VIVIENDA",
+   "cost": 210000,
+   "down": 42000,
+   "flow": 11200,
+   "note": "Dos puertas, dos inquilinos, dos depósitos."
+  },
+  {
+   "name": "Terreno urbano sin construir",
+   "tag": "TERRENO",
+   "cost": 100000,
+   "down": 20000,
+   "flow": 0,
+   "note": "No genera flujo hoy. Genera plusvalía mañana."
+  },
+  {
+   "name": "Cuatro estacionamientos",
+   "tag": "COMERCIAL",
+   "cost": 75000,
+   "down": 15000,
+   "flow": 4800,
+   "note": "Casi sin mantenimiento. Casi sin emoción."
+  },
+  {
+   "name": "Bodega pequeña",
+   "tag": "INDUSTRIAL",
+   "cost": 175000,
+   "down": 35000,
+   "flow": 8200,
+   "note": "Contrato con una empresa de logística."
+  },
+  {
+   "name": "Edificio de 6 apartamentos",
+   "tag": "VIVIENDA",
+   "cost": 600000,
+   "down": 120000,
+   "flow": 30000,
+   "note": "Seis rentas, un solo techo que reparar."
+  },
+  {
+   "name": "Casa de playa (renta corta)",
+   "tag": "TURISMO",
+   "cost": 330000,
+   "down": 66000,
+   "flow": 13800,
+   "note": "Temporada alta excelente. Temporada baja, silencio."
+  },
+  {
+   "name": "Oficina de 80 m2",
+   "tag": "COMERCIAL",
+   "cost": 235000,
+   "down": 70000,
+   "flow": 13600,
+   "note": "Consultoría joven que acaba de firmar 3 años."
+  },
+  {
+   "name": "Lavandería automática",
+   "tag": "NEGOCIO",
+   "cost": 130000,
+   "down": 52000,
+   "flow": 14800,
+   "note": "Empleado medio tiempo incluido en los números."
+  },
+  {
+   "name": "Cafetería de barrio",
+   "tag": "NEGOCIO",
+   "cost": 100000,
+   "down": 40000,
+   "flow": 12400,
+   "note": "Clientela fiel. El café no se inventa, se ejecuta."
+  },
+  {
+   "name": "Franquicia de comida",
+   "tag": "FRANQUICIA",
+   "cost": 300000,
+   "down": 120000,
+   "flow": 28000,
+   "note": "Te dan el manual. Te cobran regalías."
+  },
+  {
+   "name": "Taller mecánico",
+   "tag": "NEGOCIO",
+   "cost": 150000,
+   "down": 60000,
+   "flow": 16200,
+   "note": "Equipo y clientes incluidos. El jefe anterior se jubila."
+  },
+  {
+   "name": "Finca de cultivo",
+   "tag": "AGRO",
+   "cost": 200000,
+   "down": 80000,
+   "flow": 18000,
+   "note": "Buena cosecha, buen año. El clima no firma contratos."
+  },
+  {
+   "name": "Mini-supermercado",
+   "tag": "NEGOCIO",
+   "cost": 250000,
+   "down": 100000,
+   "flow": 25000,
+   "note": "Márgenes delgados, volumen enorme."
+  },
+  {
+   "name": "Gimnasio boutique",
+   "tag": "NEGOCIO",
+   "cost": 170000,
+   "down": 68000,
+   "flow": 18800,
+   "note": "Mensualidades fijas. La moda del fitness ayuda."
+  },
+  {
+   "name": "Guardería",
+   "tag": "NEGOCIO",
+   "cost": 140000,
+   "down": 56000,
+   "flow": 15200,
+   "note": "Lista de espera de 40 familias."
+  },
+  {
+   "name": "Apartamento para renta corta",
+   "tag": "TURISMO",
+   "cost": 135000,
+   "down": 27000,
+   "flow": 5800,
+   "note": "Centro histórico. Buen flujo, mucho trabajo."
+  },
+  {
+   "name": "Paneles solares (venta a la red)",
+   "tag": "ENERGÍA",
+   "cost": 90000,
+   "down": 27000,
+   "flow": 4200,
+   "note": "Contrato de 15 años con la distribuidora."
+  },
+  {
+   "name": "Patio de camiones",
+   "tag": "INDUSTRIAL",
+   "cost": 190000,
+   "down": 57000,
+   "flow": 11600,
+   "note": "Transportadora con contrato renovable."
+  },
+  {
+   "name": "Hotel pequeño de 10 habitaciones",
+   "tag": "TURISMO",
+   "cost": 800000,
+   "down": 200000,
+   "flow": 56000,
+   "note": "Necesita gerente. Tú no eres el gerente."
+  },
+  {
+   "name": "50% de una marca de ropa",
+   "tag": "SOCIEDAD",
+   "cost": 120000,
+   "down": 60000,
+   "flow": 14000,
+   "note": "Tu socio diseña, tú pones el capital."
+  },
+  {
+   "name": "Participación en app SaaS",
+   "tag": "DIGITAL",
+   "cost": 95000,
+   "down": 48000,
+   "flow": 13000,
+   "note": "Ingresos recurrentes. También gastos recurrentes."
+  },
+  {
+   "name": "Salón de belleza",
+   "tag": "NEGOCIO",
+   "cost": 80000,
+   "down": 32000,
+   "flow": 10400,
+   "note": "Seis sillas, seis estilistas independientes."
+  },
+  {
+   "name": "Panadería de barrio",
+   "tag": "NEGOCIO",
+   "cost": 105000,
+   "down": 42000,
+   "flow": 12800,
+   "note": "Se levanta a las 4 a.m. Tú no: el panadero."
+  },
+  {
+   "name": "Almacén de self-storage",
+   "tag": "INDUSTRIAL",
+   "cost": 230000,
+   "down": 69000,
+   "flow": 19400,
+   "note": "Cincuenta puertas que se alquilan solas."
+  },
+  {
+   "name": "Socio vende su parte de un bar",
+   "tag": "NEGOCIO",
+   "cost": 70000,
+   "down": 70000,
+   "flow": 3600,
+   "note": "Precio de oportunidad. Revisa por qué se va."
+  },
+  {
+   "name": "Terreno en zona de expansión",
+   "tag": "TERRENO",
+   "cost": 110000,
+   "down": 22000,
+   "flow": 0,
+   "note": "Sin flujo hoy. La ciudad viene hacia acá."
+  }
+ ],
+ "market": [
+  {
+   "name": "BOOM INMOBILIARIO",
+   "text": "Vende UNA propiedad por 2 veces su costo. Cobra en efectivo.",
+   "effect": {
+    "type": "sell",
+    "mult": 2,
+    "target": "property",
+    "label": "vende una propiedad al doble"
+   }
+  },
+  {
+   "name": "DEMANDA DE ALQUILER",
+   "text": "Sube 25% el flujo de UNA propiedad (permanente). Anótalo en tu hoja.",
+   "effect": {
+    "type": "rent",
+    "pct": 25,
+    "target": "property"
+   }
+  },
+  {
+   "name": "MERCADO DE ACCIONES AL ALZA",
+   "text": "Vende cualquier acción o fondo por 1,5 veces su costo.",
+   "effect": {
+    "type": "sell",
+    "mult": 1.5,
+    "target": "stock"
+   }
+  },
+  {
+   "name": "CORRECCIÓN DE MERCADO",
+   "text": "Tus acciones y fondos valen 30% menos. Puedes vender perdiendo o mantener.",
+   "effect": {
+    "type": "sell",
+    "mult": 0.7,
+    "target": "stock",
+    "optional": true,
+    "label": "vende al 70% o mantén"
+   }
+  },
+  {
+   "name": "COMPRADOR PARA TU NEGOCIO",
+   "text": "Vende un negocio por 1,5 veces su costo.",
+   "effect": {
+    "type": "sell",
+    "mult": 1.5,
+    "target": "business"
+   }
+  },
+  {
+   "name": "DIVIDENDO EXTRAORDINARIO",
+   "text": "Cobra 3 meses de flujo de todos tus activos, de una sola vez.",
+   "effect": {
+    "type": "cash_flow_months",
+    "months": 3
+   }
+  },
+  {
+   "name": "RECESIÓN",
+   "text": "Pierdes el próximo turno y pagas 5.000 de gastos extras.",
+   "effect": {
+    "type": "skip",
+    "amount": -5000
+   }
+  },
+  {
+   "name": "OFERTA POR TUS TERRENOS",
+   "text": "Vende un terreno por 1,8 veces su costo.",
+   "effect": {
+    "type": "sell",
+    "mult": 1.8,
+    "target": "land"
+   }
+  },
+  {
+   "name": "OPA SOBRE TU CARTERA",
+   "text": "Un fondo ofrece 1,3 veces el costo de todas tus acciones. Aceptas o pasas.",
+   "effect": {
+    "type": "sell",
+    "mult": 1.3,
+    "target": "stock"
+   }
+  },
+  {
+   "name": "INFLACIÓN",
+   "text": "Tus gastos mensuales suben 10% (redondea a la centena). Anótalo.",
+   "effect": {
+    "type": "inflation",
+    "pct": 10
+   }
+  },
+  {
+   "name": "AUGE DE ARRENDAMIENTOS",
+   "text": "Sube 20% el flujo de UNA propiedad (permanente).",
+   "effect": {
+    "type": "rent",
+    "pct": 20,
+    "target": "property"
+   }
+  },
+  {
+   "name": "REEMBOLSO DEL BANCO",
+   "text": "Te devuelven 8.000 de comisiones. Cobra y sigue.",
+   "effect": {
+    "type": "cash",
+    "amount": 8000
+   }
+  },
+  {
+   "name": "ACCESO ANTICIPADO",
+   "text": "Roba una carta de Oportunidad Grande AHORA y decide si la compras.",
+   "effect": {
+    "type": "draw_big"
+   }
+  },
+  {
+   "name": "LIQUIDACIÓN TOTAL",
+   "text": "Vende cualquier activo por 2 veces su costo. Solo esta carta.",
+   "effect": {
+    "type": "sell",
+    "mult": 2,
+    "target": "any"
+   }
+  },
+  {
+   "name": "CRÉDITO CONGELADO",
+   "text": "Este turno no puedes pedir préstamos al banco. Ni tú ni nadie.",
+   "effect": {
+    "type": "freeze"
+   }
+  },
+  {
+   "name": "INQUILINO SE VA",
+   "text": "Una propiedad tuya no genera flujo durante 2 turnos.",
+   "effect": {
+    "type": "rent_lost",
+    "turns": 2
+   }
+  },
+  {
+   "name": "OFERTA ENTRE JUGADORES",
+   "text": "Elige un activo de otro jugador y ofrécele 1,5 veces su costo. Puede aceptar o rechazar.",
+   "effect": {
+    "type": "none"
+   }
+  },
+  {
+   "name": "CONSULTORÍA PAGADA",
+   "text": "Cobras 10.000 por una asesoría. Bien por ti.",
+   "effect": {
+    "type": "cash",
+    "amount": 10000
+   }
+  },
+  {
+   "name": "TU CASA SUBE DE VALOR",
+   "text": "Puedes vender tu vivienda principal por 1,5 veces su costo y volver a alquilar.",
+   "effect": {
+    "type": "none"
+   }
+  },
+  {
+   "name": "CRISIS DE CONFIANZA",
+   "text": "Todos los jugadores pagan 3.000 de gastos imprevistos. Tú también.",
+   "effect": {
+    "type": "all_pay",
+    "amount": 3000
+   }
+  }
+ ],
+ "gusto": [
+  {
+   "name": "Celular nuevo de gama alta",
+   "amount": 12000,
+   "note": "El que tienes funciona. Este también brilla.",
+   "fixed": 0
+  },
+  {
+   "name": "Fin de semana en la playa",
+   "amount": 8000,
+   "note": "Sol, hotel y comida. Vuelves el lunes igual de cansado.",
+   "fixed": 0
+  },
+  {
+   "name": "Cena en restaurante caro",
+   "amount": 4000,
+   "note": "La cuenta llega antes que la felicidad.",
+   "fixed": 0
+  },
+  {
+   "name": "Suscripciones que olvidaste",
+   "amount": 3000,
+   "note": "Cuatro cobros de 750. Ninguno lo usaste este mes.",
+   "fixed": 0
+  },
+  {
+   "name": "Ropa que usarás una vez",
+   "amount": 5000,
+   "note": "Etiqueta puesta, armario lleno.",
+   "fixed": 0
+  },
+  {
+   "name": "Café diario del mes",
+   "amount": 2500,
+   "note": "30 cafés de 83. Los números no mienten.",
+   "fixed": 0
+  },
+  {
+   "name": "Televisor de 75 pulgadas a 24 cuotas",
+   "amount": 15000,
+   "note": "Pago inicial. Suma 1.500 a tus gastos fijos.",
+   "fixed": 1500
+  },
+  {
+   "name": "Auto nuevo 'porque te lo mereces'",
+   "amount": 25000,
+   "note": "Pago inicial. Suma 2.500 a tus gastos fijos (seguro, cuota, parqueadero).",
+   "fixed": 2500
+  },
+  {
+   "name": "Multa de tránsito",
+   "amount": 6000,
+   "note": "Ibas con prisa. Ahora vas a pie.",
+   "fixed": 0
+  },
+  {
+   "name": "Regalo de cumpleaños",
+   "amount": 5000,
+   "note": "Tu sobrina cumple 15. No hay opción.",
+   "fixed": 0
+  },
+  {
+   "name": "Reparación del techo",
+   "amount": 9000,
+   "note": "Gotera en el cuarto. La casa no negocia.",
+   "fixed": 0
+  },
+  {
+   "name": "Mudanza",
+   "amount": 11000,
+   "note": "Cambias de barrio, no de hábitos.",
+   "fixed": 0
+  },
+  {
+   "name": "REVISAS TUS GASTOS",
+   "amount": -2000,
+   "note": "Cancelas dos suscripciones. Tus gastos fijos bajan 2.000 para siempre.",
+   "fixed": 0
+  },
+  {
+   "name": "VENDES LO QUE NO USAS",
+   "amount": -4000,
+   "note": "Cobras 4.000 en efectivo. Menos cosas, más dinero.",
+   "fixed": 0
+  }
+ ],
+ "dreams": [
+  {
+   "name": "Casa en la montaña",
+   "cost": 120000
+  },
+  {
+   "name": "Un año viajando por el mundo",
+   "cost": 80000
+  },
+  {
+   "name": "Fundación educativa",
+   "cost": 150000
+  },
+  {
+   "name": "Velero para navegar el Caribe",
+   "cost": 110000
+  },
+  {
+   "name": "Isla privada (99 años de renta)",
+   "cost": 250000
+  },
+  {
+   "name": "Colección de arte",
+   "cost": 90000
+  },
+  {
+   "name": "Auto clásico restaurado",
+   "cost": 60000
+  },
+  {
+   "name": "Año sabático sin trabajar",
+   "cost": 75000
+  },
+  {
+   "name": "Escuela gratuita para tu barrio",
+   "cost": 160000
+  },
+  {
+   "name": "Estadio con tu nombre",
+   "cost": 250000
+  },
+  {
+   "name": "Rancho con caballos",
+   "cost": 200000
+  },
+  {
+   "name": "Empresa que emplee a 50 personas",
+   "cost": 180000
+  }
+ ],
+ "board": [
+  {
+   "name": "SALIDA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo de caja"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Mercado",
+   "kind": "mercado",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Gusto",
+   "kind": "gusto",
+   "sub": "Gasta o ahorra"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo de caja"
+  },
+  {
+   "name": "Oportunidad grande",
+   "kind": "grande",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo de caja"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Mercado",
+   "kind": "mercado",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Oportunidad grande",
+   "kind": "grande",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo de caja"
+  },
+  {
+   "name": "Gusto",
+   "kind": "gusto",
+   "sub": "Gasta o ahorra"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Mercado",
+   "kind": "mercado",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Oportunidad grande",
+   "kind": "grande",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo de caja"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo de caja"
+  },
+  {
+   "name": "Oportunidad grande",
+   "kind": "grande",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Mercado",
+   "kind": "mercado",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Banco / Caridad",
+   "kind": "banco",
+   "sub": "Préstamo o donación"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  }
+ ],
+ "via": [
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo x10"
+  },
+  {
+   "name": "Oportunidad",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "SUEÑO",
+   "kind": "sueno",
+   "sub": "Compra tu sueño"
+  },
+  {
+   "name": "Mercado",
+   "kind": "mercado",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo x10"
+  },
+  {
+   "name": "Oportunidad",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "SUEÑO",
+   "kind": "sueno",
+   "sub": "Compra tu sueño"
+  },
+  {
+   "name": "AUDITORÍA",
+   "kind": "banco",
+   "sub": "Paga 10% de tu efectivo"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo x10"
+  },
+  {
+   "name": "Oportunidad",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "SUEÑO",
+   "kind": "sueno",
+   "sub": "Compra tu sueño"
+  },
+  {
+   "name": "Mercado",
+   "kind": "mercado",
+   "sub": "Roba 1 carta"
+  }
+ ],
+ "ratoneraPos": [
+  [
+   1,
+   6
+  ],
+  [
+   2,
+   6
+  ],
+  [
+   3,
+   6
+  ],
+  [
+   4,
+   6
+  ],
+  [
+   5,
+   6
+  ],
+  [
+   6,
+   6
+  ],
+  [
+   7,
+   6
+  ],
+  [
+   8,
+   6
+  ],
+  [
+   8,
+   5
+  ],
+  [
+   8,
+   4
+  ],
+  [
+   8,
+   3
+  ],
+  [
+   8,
+   2
+  ],
+  [
+   8,
+   1
+  ],
+  [
+   7,
+   1
+  ],
+  [
+   6,
+   1
+  ],
+  [
+   5,
+   1
+  ],
+  [
+   4,
+   1
+  ],
+  [
+   3,
+   1
+  ],
+  [
+   2,
+   1
+  ],
+  [
+   1,
+   1
+  ],
+  [
+   1,
+   2
+  ],
+  [
+   1,
+   3
+  ],
+  [
+   1,
+   4
+  ],
+  [
+   1,
+   5
+  ]
+ ],
+ "viaPos": [
+  [
+   2,
+   2
+  ],
+  [
+   3,
+   2
+  ],
+  [
+   4,
+   2
+  ],
+  [
+   5,
+   2
+  ],
+  [
+   6,
+   2
+  ],
+  [
+   7,
+   2
+  ],
+  [
+   7,
+   3
+  ],
+  [
+   6,
+   3
+  ],
+  [
+   5,
+   3
+  ],
+  [
+   4,
+   3
+  ],
+  [
+   3,
+   3
+  ],
+  [
+   2,
+   3
+  ]
+ ]
+}

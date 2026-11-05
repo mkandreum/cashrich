@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLUJO LIBRE — Tablero</title>
+<style>
+:root{
+  --paper:#F4EBD9; --card:#FBF6EA; --ink:#17252E; --ink2:#43555F;
+  --peq:#2E6E6B; --grande:#C2452D; --mercado:#D99A1F; --gusto:#7A4E6E;
+  --cobrar:#3F7A4A; --banco:#44586B; --sueno:#8C5A1E;
+  --bg:#0E1A20; --panel:#152730;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;}
+body{
+  background:radial-gradient(1200px 700px at 25% 15%, #1B3340 0%, var(--bg) 60%);
+  color:var(--paper);font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;
+}
+.app{display:flex;height:100vh;gap:18px;padding:18px}
+.boardWrap{flex:1;display:flex;align-items:center;justify-content:center;min-width:0}
+.board{
+  width:min(100%, 132vh);aspect-ratio:420/297;background:#E7D9BE;border-radius:10px;
+  padding:1.1%;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(6,1fr);
+  gap:.35%;container-type:inline-size;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.45);
+  outline:2px solid #0b1418;outline-offset:-2px;
+}
+.cell{background:var(--card);border:1px solid rgba(23,37,46,.55);border-radius:6px;
+  display:flex;flex-direction:column;overflow:hidden;position:relative;min-width:0;color:var(--ink)}
+.cell .band{height:20%;min-height:12px;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1.05cqw;font-weight:700;letter-spacing:.12em}
+.cell .glyph{font-size:2.1cqw;text-align:center;line-height:1;margin-top:.8cqw}
+.cell .lbl{font-family:Georgia,serif;font-size:1.3cqw;font-weight:700;text-align:center;
+  padding:.3cqw .4cqw 0;line-height:1.05}
+.cell .toks{margin-top:auto;display:flex;flex-wrap:wrap;gap:.25cqw;justify-content:center;
+  padding:.5cqw;min-height:2.4cqw;align-items:center}
+.cell.hot{box-shadow:inset 0 0 0 2px #fff, 0 0 0 2px var(--grande);}
+.cell.peq{background:#EDF3F0}.cell.grande{background:#FBEEE9}.cell.mercado{background:#FCF3DA}
+.cell.gusto{background:#F4ECF2}.cell.cobrar{background:#EAF2EB}.cell.banco{background:#EBEFF3}
+.cell.peq .band{background:var(--peq)}.cell.grande .band{background:var(--grande)}
+.cell.mercado .band{background:var(--mercado)}.cell.gusto .band{background:var(--gusto)}
+.cell.cobrar .band{background:var(--cobrar)}.cell.banco .band{background:var(--banco)}
+.cell.start{background:#FBEFC6}
+.tok{width:2.1cqw;height:2.1cqw;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.95cqw;font-weight:800;color:#fff;border:1px solid rgba(0,0,0,.35);
+  box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .25s}
+.tok.me{transform:scale(1.18)}
+
+/* interior */
+.inner{grid-column:2/8;grid-row:2/6;display:flex;flex-direction:column;gap:.6%;padding-top:.5%}
+.viaHead{display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1.5px solid var(--ink);padding-bottom:.4%;font-size:1.05cqw;letter-spacing:.16em;
+  font-weight:700;color:var(--ink)}
+.viaHead span:last-child{font-weight:400;letter-spacing:.04em;color:#43555F;font-size:.85cqw}
+.viaGrid{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(2,1fr);
+  gap:.35%;height:47%}
+.vcell{background:var(--card);border:1px solid rgba(23,37,46,.55);border-radius:5px;
+  display:flex;flex-direction:column;overflow:hidden;position:relative;color:var(--ink)}
+.vcell .band{height:24%;min-height:9px;color:#fff;font-size:.9cqw;display:flex;align-items:center;
+  justify-content:center;letter-spacing:.1em;font-weight:700}
+.vcell .glyph{font-size:1.6cqw;text-align:center;margin-top:.5cqw}
+.vcell .toks{margin-top:auto;display:flex;gap:.2cqw;justify-content:center;padding:.3cqw;min-height:2cqw}
+.vcell.cobrar{background:#EAF2EB}.vcell.peq{background:#EDF3F0}.vcell.mercado{background:#FCF3DA}
+.vcell.sueno{background:#F8EEE0}.vcell.banco{background:#EBEFF3}
+.vcell.cobrar .band{background:var(--cobrar)}.vcell.peq .band{background:var(--peq)}
+.vcell.mercado .band{background:var(--mercado)}.vcell.sueno .band{background:var(--sueno)}
+.vcell.banco .band{background:var(--banco)}
+.vcell.hot{box-shadow:inset 0 0 0 2px #fff, 0 0 0 2px var(--grande)}
+
+.core{flex:1;display:flex;gap:.5%;min-height:0}
+.logoBox{flex:1.5;background:var(--card);border:1px solid rgba(23,37,46,.55);border-radius:8px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
+  padding:1.5%;color:var(--ink)}
+.logo{font-family:Georgia,serif;font-size:4.2cqw;font-weight:700;line-height:.95}
+.logo em{font-style:normal;color:var(--grande)}
+.logoSub{font-size:.78cqw;letter-spacing:.3em;margin-top:1.2cqw;color:#43555F;text-transform:uppercase}
+.diceBox{margin-top:1.4cqw;display:flex;align-items:center;gap:1cqw}
+.die{width:3.4cqw;height:3.4cqw;border-radius:8px;background:#17252E;display:grid;
+  grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:.55cqw;gap:.1cqw}
+.die i{border-radius:50%;background:transparent}
+.die i.on{background:#F4EBD9}
+.msg{font-size:1.05cqw;line-height:1.35;color:#22333C;max-width:92%;margin-top:.8cqw}
+
+.stage{flex:1;background:var(--card);border:1px solid rgba(23,37,46,.55);border-radius:8px;
+  padding:1.2%;display:flex;flex-direction:column;color:var(--ink);overflow:hidden}
+.stage .tag{font-size:.75cqw;letter-spacing:.18em;color:#43555F;text-transform:uppercase}
+.stage h3{font-family:Georgia,serif;font-size:1.7cqw;line-height:1.12;margin:.5cqw 0 .8cqw}
+.stage .big{font-family:Georgia,serif;font-size:3cqw;font-weight:700;line-height:1}
+.stage .rows{display:flex;flex-wrap:wrap;gap:.4cqw 1.4cqw;margin-top:.8cqw;font-size:.92cqw;color:#43555F}
+.stage .rows b{color:var(--ink)}
+.stage .note{font-size:.86cqw;line-height:1.35;color:#4E6069;font-style:italic;margin-top:auto}
+.stage .who{font-size:.8cqw;letter-spacing:.14em;color:var(--grande);font-weight:700;text-transform:uppercase}
+.stage.empty{justify-content:center;align-items:center;text-align:center}
+
+/* sidebar */
+aside{width:340px;flex:0 0 340px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.panel{background:rgba(21,39,48,.85);border:1px solid rgba(244,235,217,.12);border-radius:12px;
+  padding:14px 16px;display:flex;flex-direction:column;min-height:0}
+.brand{display:flex;justify-content:space-between;align-items:baseline}
+.brand b{font-family:Georgia,serif;font-size:19px;letter-spacing:.02em}
+.brand span{font-size:10px;letter-spacing:.18em;color:#7f949c;text-transform:uppercase}
+.qrRow{display:flex;gap:14px;align-items:center;margin-top:12px}
+.qr{background:#F4EBD9;padding:8px;border-radius:8px;line-height:0}
+.qr svg{width:104px;height:104px;display:block}
+.joininfo{flex:1;min-width:0}
+.joininfo .u{font-family:Georgia,serif;font-size:15px;word-break:break-all;color:#F4EBD9}
+.joininfo .hint{font-size:11px;color:#8fa3ab;margin-top:6px;line-height:1.35}
+.joininfo .alt{font-size:10px;color:#6f848c;margin-top:7px;line-height:1.45}
+.joininfo .alt b{color:#a9bcc4;font-weight:600}
+.btn{appearance:none;border:0;border-radius:9px;padding:11px 14px;font-size:13px;font-weight:700;
+  letter-spacing:.04em;cursor:pointer;background:var(--grande);color:#fff;width:100%;margin-top:12px}
+.btn.ghost{background:transparent;border:1px solid rgba(244,235,217,.25);color:#c9d6db}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.players{flex:0 1 auto;overflow:auto}
+.pl{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(244,235,217,.08)}
+.pl:last-child{border-bottom:0}
+.pl .dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto}
+.pl .nm{flex:1;min-width:0}
+.pl .nm b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .nm span{font-size:10.5px;color:#8fa3ab;letter-spacing:.05em}
+.pl .mn{text-align:right;font-variant-numeric:tabular-nums}
+.pl .mn b{display:block;font-size:13px}
+.pl .mn span{font-size:10.5px;color:#8fa3ab}
+.pl.turn .nm b{color:#F2C14E}
+.pl.out{opacity:.45}
+.kick{appearance:none;border:0;background:transparent;color:#6f848c;font-size:18px;line-height:1;
+  padding:4px 6px;cursor:pointer;border-radius:6px}
+.kick:hover{background:rgba(194,69,45,.25);color:#fff}
+.pbar{height:4px;background:rgba(244,235,217,.12);border-radius:3px;margin-top:5px;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--cobrar);width:0}
+.logPanel{flex:1;min-height:100px;overflow:auto}
+.logItem{font-size:11.5px;line-height:1.4;color:#a9bcc4;padding:4px 0;border-bottom:1px dashed rgba(244,235,217,.07)}
+.logItem b{color:#e8dcc4;font-weight:600}
+.title{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#7f949c;margin-bottom:8px}
+.empty{font-size:12px;color:#7f949c;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="boardWrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <aside>
+    <div class="panel">
+      <div class="brand"><b>FLUJO LIBRE</b><span id="phase">Lobby</span></div>
+      <div class="qrRow">
+        <div class="qr" id="qr"></div>
+        <div class="joininfo">
+          <div class="u" id="joinUrl">—</div>
+          <div class="hint" id="joinHint">Abre esta dirección en tu móvil y escribe tu nombre.</div>
+          <div class="alt" id="altIps"></div>
+        </div>
+      </div>
+      <button class="btn" id="startBtn">Empezar partida</button>
+      <button class="btn ghost" id="resetBtn" style="margin-top:8px;display:none">Nueva partida</button>
+    </div>
+
+    <div class="panel players">
+      <div class="title">Jugadores</div>
+      <div id="players"><div class="empty">Aún no hay nadie. Escanea el código.</div></div>
+    </div>
+
+    <div class="panel logPanel">
+      <div class="title">Lo que pasa</div>
+      <div id="log"></div>
+    </div>
+  </aside>
+</div>
+
+<script src="/vendor/qrcode.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+let lastSig = '';
+let qrDone = false;
+
+const BAND = {peq:'PEQUEÑA', grande:'GRANDE', mercado:'MERCADO', gusto:'GUSTO',
+  cobrar:'COBRA', banco:'BANCO'};
+const GLYPH = {peq:'▲', grande:'◆', mercado:'⇄', gusto:'◑', cobrar:'$', banco:'§'};
+
+function buildBoard(st){
+  const board = $('#board');
+  board.innerHTML = '';
+  st.board.forEach((c, i) => {
+    const [col,row] = st.ratoneraPos[i];
+    const d = document.createElement('div');
+    d.className = 'cell ' + c.kind + (i===0?' start':'');
+    d.style.gridColumn = col; d.style.gridRow = row;
+    d.dataset.i = i;
+    d.innerHTML = `<div class="band">${BAND[c.kind]||''}</div>
+      <div class="glyph">${GLYPH[c.kind]||''}</div>
+      <div class="lbl">${i===0?'SALIDA':(c.kind==='peq'?'Pequeña':c.kind==='grande'?'Grande':c.name)}</div>
+      <div class="toks"></div>`;
+    board.appendChild(d);
+  });
+
+  const inner = document.createElement('div');
+  inner.className = 'inner';
+  inner.innerHTML = `<div class="viaHead"><span>VÍA RÁPIDA</span>
+      <span>salir de la ratonera abre esta pista</span></div>
+    <div class="viaGrid" id="viaGrid"></div>
+    <div class="core">
+      <div class="logoBox" id="home">
+        <div class="logo">FLUJO <em>LIBRE</em></div>
+        <div class="logoSub">El juego de la libertad financiera</div>
+        <div class="diceBox"><div class="die" id="die"></div><div class="msg" id="msg"></div></div>
+      </div>
+      <div class="stage empty" id="stage"><div class="empty">Esperando la primera tirada…</div></div>
+    </div>`;
+  board.appendChild(inner);
+
+  const vg = inner.querySelector('#viaGrid');
+  st.via.forEach((c, i) => {
+    const d = document.createElement('div');
+    d.className = 'vcell ' + c.kind;
+    d.dataset.v = i;
+    d.innerHTML = `<div class="band">${c.kind==='sueno'?'SUEÑO':c.kind==='peq'?'OPORTUNIDAD':
+      c.kind==='mercado'?'MERCADO':c.kind==='banco'?'AUDITORÍA':'COBRA'}</div>
+      <div class="glyph">${c.kind==='sueno'?'★':c.kind==='peq'?'◆':c.kind==='mercado'?'⇄':'$'}</div>
+      <div class="toks"></div>`;
+    vg.appendChild(d);
+  });
+}
+
+function sig(st){
+  return JSON.stringify([st.turn, st.phase, st.dice, st.pending, st.lastCard,
+    st.players.map(p=>[p.id,p.cash,p.passive,p.pos,p.vpos,p.assets.length,p.escaped,p.bankrupt]),
+    st.log[0] && st.log[0].id, st.message]);
+}
+
+function render(st){
+  if (!document.querySelector('.cell')) buildBoard(st);
+  $('#phase').textContent = st.phase === 'lobby' ? 'Lobby' : st.phase === 'over' ? 'Fin' : `Ronda ${st.round}`;
+
+  // fichas
+  document.querySelectorAll('.toks').forEach(t => t.innerHTML = '');
+  st.players.forEach((p, idx) => {
+    const sel = p.escaped ? `.vcell[data-v="${p.vpos}"]` : `.cell[data-i="${p.pos}"]`;
+    const cell = document.querySelector(sel);
+    if (!cell) return;
+    const t = cell.querySelector('.toks');
+    const el = document.createElement('div');
+    el.className = 'tok' + (idx === st.turn && st.phase==='playing' ? ' me' : '');
+    el.style.background = p.color;
+    el.textContent = p.name.slice(0,1).toUpperCase();
+    el.title = p.name;
+    t.appendChild(el);
+  });
+
+  document.querySelectorAll('.cell,.vcell').forEach(c => c.classList.remove('hot'));
+  if (st.phase === 'playing' && st.players[st.turn]) {
+    const p = st.players[st.turn];
+    const cell = document.querySelector(p.escaped ? `.vcell[data-v="${p.vpos}"]` : `.cell[data-i="${p.pos}"]`);
+    if (cell) cell.classList.add('hot');
+  }
+
+  // dado
+  const deck = $('#die');
+  const pips = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+  deck.innerHTML = Array.from({length:9}, (_,i) =>
+    `<i class="${(pips[st.dice]||[]).includes(i)?'on':''}"></i>`).join('');
+  $('#msg').textContent = st.message || '';
+
+  // stage
+  const stage = $('#stage');
+  const card = st.lastCard;
+  if (card) {
+    stage.classList.remove('empty');
+    const amount = card.kind==='dream' ? card.cost
+      : card.kind==='gusto' ? Math.abs(card.amount)
+      : (card.down || 0);
+    let rows = '';
+    if (card.kind==='small'||card.kind==='big') {
+      rows = `<div class="rows"><span>Inicial <b>$${fmt(card.down)}</b></span>
+        <span>Flujo <b>+$${fmt(card.flow)}/mes</b></span>
+        <span>Costo <b>$${fmt(card.cost)}</b></span></div>`;
+    }
+    if (card.kind==='market') rows = `<div class="rows"><span>${card.text}</span></div>`;
+    if (card.kind==='gusto') rows = `<div class="rows"><span>${card.amount>=0?'Pagas':'Cobras'} ${'$'+fmt(amount)}</span></div>`;
+    if (card.kind==='dream') rows = `<div class="rows"><span>Precio <b>$${fmt(card.cost)}</b></span></div>`;
+    const label = {small:'OPORTUNIDAD PEQUEÑA', big:'OPORTUNIDAD GRANDE', market:'MERCADO',
+      gusto:'GUSTO', dream:'SUEÑO'}[card.kind] || '';
+    stage.innerHTML = `<div class="who">${st.turnPlayer || ''}</div>
+      <div class="tag">${label}</div>
+      <h3>${card.name}</h3>
+      ${card.kind==='market' ? '' : `<div class="big">$${fmt(amount)}</div>`}
+      ${rows}
+      <div class="note">${card.note || ''}</div>`;
+  } else {
+    stage.classList.add('empty');
+    stage.innerHTML = `<div class="empty">${st.phase==='lobby'
+      ? 'Escanea el QR y únete desde el móvil.'
+      : 'La mesa está en turno de ' + (st.turnPlayer||'—') + '.'}</div>`;
+  }
+
+  // jugadores
+  const pls = $('#players');
+  if (!st.players.length) {
+    pls.innerHTML = '<div class="empty">Aún no hay nadie. Escanea el código.</div>';
+  } else {
+    pls.innerHTML = st.players.map((p,i) => {
+      const pct = Math.min(100, p.expenses ? Math.round(p.passive / p.expenses * 100) : 0);
+      return `<div class="pl ${i===st.turn&&st.phase==='playing'?'turn':''} ${p.bankrupt?'out':''}">
+        <div class="dot" style="background:${p.color}"></div>
+        <div class="nm"><b>${esc(p.name)}</b><span>${p.profession||'esperando'} · ${p.escaped?'VÍA RÁPIDA':'ratonera'}</span>
+          <div class="pbar"><i style="width:${pct}%"></i></div></div>
+        <div class="mn"><b>$${fmt(p.cash)}</b><span>$${fmt(p.flow)}/mes</span></div>
+        ${st.phase==='lobby' ? `<button class="kick" data-kick="${p.id}" title="Quitar">×</button>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  // log
+  $('#log').innerHTML = st.log.slice(0, 12).map(l =>
+    `<div class="logItem">${esc(l.text)}</div>`).join('');
+
+  // botones
+  const start = $('#startBtn'), reset = $('#resetBtn');
+  start.style.display = st.phase === 'lobby' ? 'block' : 'none';
+  start.disabled = st.players.length < 2;
+  start.textContent = st.players.length < 2 ? 'Faltan jugadores' : 'Empezar partida';
+  reset.style.display = st.phase === 'playing' ? 'block' : 'none';
+
+  // qr
+  if (!qrDone && st.lanUrl) {
+    qrDone = true;
+    try {
+      const qr = qrcode(0, 'M');
+      qr.addData(st.lanUrl + '/p');
+      qr.make();
+      $('#qr').innerHTML = qr.createSvgTag({cellSize: 4, margin: 0});
+    } catch(e) {}
+    $('#joinUrl').textContent = st.lanUrl.replace('http://','') + '/p';
+    const others = (st.allUrls || []).filter(u => u !== st.lanUrl);
+    if (others.length) {
+      $('#altIps').innerHTML = 'Si no conecta, prueba:<br><b>' +
+        others.map(u => u.replace('http://','') + '/p').join('</b><br><b>') + '</b>';
+    }
+  }
+}
+
+function fmt(n){ return Math.round(n||0).toLocaleString('es-CO'); }
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+const ev = new EventSource('/events');
+ev.onmessage = (e) => {
+  const st = JSON.parse(e.data);
+  window.__st = st;
+  const s = sig(st);
+  if (s !== lastSig) { lastSig = s; render(st); }
+};
+
+function hostAction(type){
+  return fetch('/api/action', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({playerId: window.__hostId, token: window.__token, type})})
+    .then(r => r.json()).then(d => { if (d.error) toast(d.error); });
+}
+$('#startBtn').onclick = () => hostAction('start');
+$('#resetBtn').onclick = () => { if (confirm('¿Empezar una partida nueva?')) hostAction('reset'); };
+
+document.addEventListener('click', (e) => {
+  const k = e.target.closest('[data-kick]');
+  if (!k) return;
+  fetch('/api/action', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({playerId: window.__hostId, token: window.__token,
+      type: 'kick', payload: {playerId: k.dataset.kick}})})
+    .then(r => r.json()).then(d => { if (d.error) toast(d.error); });
+});
+
+function toast(msg){
+  const el = document.createElement('div');
+  el.textContent = msg;
+  el.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);'+
+    'background:#C2452D;color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;z-index:99';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 2600);
+}
+
+fetch('/api/host').then(r=>r.json()).then(d => { window.__token = d.token; window.__hostId = d.id; });
+</script>
+</body>
+</html>
