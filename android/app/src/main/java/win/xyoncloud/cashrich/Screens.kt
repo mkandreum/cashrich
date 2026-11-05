@@ -361,6 +361,21 @@ private fun Lobby(vm: GameViewModel, room: Snapshot, tv: Boolean) {
         } else {
             PanelDark(Modifier.fillMaxWidth()) { T("Esperando a que el admin empiece…", color = C.Cream, size = 18.sp, weight = FontWeight.SemiBold, align = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
         }
+        T("Salir de la mesa", color = C.Cream, weight = FontWeight.SemiBold, modifier = Modifier.padding(8.dp).clickableNoRipple { vm.leave() })
+    }
+}
+
+/** ¿Salir de la partida? Se puede volver a entrar con el mismo código. */
+@Composable
+private fun LeaveDialog(onStay: () -> Unit, onLeave: () -> Unit) {
+    androidx.compose.ui.window.Dialog(onDismissRequest = onStay) {
+        Panel(Modifier.fillMaxWidth(), padding = 18.dp) {
+            D("¿Salir de la partida?", size = 24.sp)
+            T("Podrás volver a entrar con el código de la mesa.", color = C.Ink.copy(alpha = 0.75f), modifier = Modifier.padding(top = 6.dp, bottom = 14.dp))
+            Chunky("Seguir jugando", Modifier.fillMaxWidth(), Tone.Mint) { onStay() }
+            Spacer(Modifier.height(8.dp))
+            Chunky("Salir", Modifier.fillMaxWidth(), Tone.Coral) { onLeave() }
+        }
     }
 }
 
@@ -484,16 +499,18 @@ private fun PhoneGame(vm: GameViewModel, room: Snapshot) {
     LaunchedEffect(myTurn) { if (myTurn) tab = "play" }
     val decision = if (myTurn && mv == null && (room.pending != null || room.lastCard != null)) "${room.pending?.type}:${room.lastCard?.name}" else ""
     LaunchedEffect(decision) { if (decision.isNotEmpty() && !room.tv) scroll.animateScrollTo(scroll.maxValue) }
-    BackHandler { vm.leave() }
+    var confirmLeave by remember { mutableStateOf(false) }
+    BackHandler { confirmLeave = true }
 
     Box(Modifier.fillMaxSize()) {
+        if (confirmLeave) LeaveDialog(onStay = { confirmLeave = false }, onLeave = { confirmLeave = false; vm.leave() })
         BoxWithConstraints(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
             val wide = maxWidth >= 840.dp
             if (wide) {
                 Row(Modifier.fillMaxSize().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     BoardBox(room, mv, Modifier.weight(1f).fillMaxHeight())
                     Column(Modifier.width(380.dp).fillMaxHeight().verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        TopBar(vm, room, null)
+                        TopBar(vm, room, null) { confirmLeave = true }
                         if (me != null) {
                             PlayerHud(me, room)
                             ActionPanel(room, me, mv, send)
@@ -505,7 +522,7 @@ private fun PhoneGame(vm: GameViewModel, room: Snapshot) {
                 }
             } else {
                 Column(Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TopBar(vm, room, if (room.tv && me != null) ({ showBoard = !showBoard }) else null)
+                    TopBar(vm, room, if (room.tv && me != null) ({ showBoard = !showBoard }) else null) { confirmLeave = true }
                     Column(Modifier.weight(1f).verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (me != null) PlayerHud(me, room)
                         if (me == null) T("Estás de espectador: la partida ya empezó.", color = C.Cream, weight = FontWeight.SemiBold)
@@ -549,7 +566,7 @@ private fun BoardBox(room: Snapshot, mv: DiceMotion?, modifier: Modifier) {
 }
 
 @Composable
-private fun TopBar(vm: GameViewModel, room: Snapshot, toggleBoard: (() -> Unit)?) {
+private fun TopBar(vm: GameViewModel, room: Snapshot, toggleBoard: (() -> Unit)?, onLeave: () -> Unit) {
     var muted by remember { mutableStateOf(Sfx.muted) }
     var song by remember { mutableStateOf(Music.enabled) }
     val isAdmin = vm.session?.playerId == room.adminId
@@ -569,6 +586,7 @@ private fun TopBar(vm: GameViewModel, room: Snapshot, toggleBoard: (() -> Unit)?
         if (toggleBoard != null) Button(Lucide.Tv, toggleBoard)
         Button(if (song) Lucide.Music2 else Lucide.Music) { Music.enabled = !song; song = !song }
         Button(if (muted) Lucide.VolumeX else Lucide.Volume2) { Sfx.muted = !muted; muted = !muted }
+        Button(Lucide.LogOut, onLeave)
     }
 }
 

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import type { Snapshot } from '../lib/api';
 import { Logo } from '../components/Logo';
 import { Avatar } from '../components/Avatar';
+import { navigate } from '../App';
 
 const LEVELS = [
   ['facil', 'Fácil', 'Más efectivo inicial, crédito barato y mercados tranquilos.'],
@@ -128,6 +129,7 @@ export function Lobby({ room, meId, isHost, tv, send }: {
           )}
         </section>
       </div>
+      {!tv && <button className="mt-5 cursor-pointer font-semibold underline underline-offset-4" onClick={() => navigate('/')}>Salir de la mesa</button>}
     </main>
   );
 }

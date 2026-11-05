@@ -1,6 +1,6 @@
 import confetti from 'canvas-confetti';
 import { AnimatePresence, motion } from 'motion/react';
-import { BookOpen, Dices, Music, Music2, FastForward, Maximize, Minimize, Tv, Users, Volume2, VolumeX, WalletCards, WifiOff } from 'lucide-react';
+import { BookOpen, Dices, LogOut, Music, Music2, FastForward, Maximize, Minimize, Tv, Users, Volume2, VolumeX, WalletCards, WifiOff } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import { navigate } from '../App';
 import { ActionPanel } from '../components/ActionPanel';
@@ -202,6 +202,12 @@ function TopBar({ room, online, isHost, canSkip, send, boardToggle }: { room: Sn
           {screen.active ? <Minimize size={18} aria-hidden /> : <Maximize size={18} aria-hidden />}
         </button>
       )}
+      <button
+        aria-label="Salir de la partida" title="Salir" onClick={() => { if (window.confirm('¿Salir de la partida? Podrás volver a entrar con el código de la mesa.')) navigate('/'); }}
+        className="grid size-9 cursor-pointer place-items-center rounded-lg bg-black/25 hover:bg-black/40"
+      >
+        <LogOut size={18} aria-hidden />
+      </button>
       <button
         aria-label={songOn ? 'Quitar la música' : 'Poner música'} title="Música" onClick={() => { setMusicEnabled(!songOn); setSongOn(!songOn); }}
         className={`grid size-9 cursor-pointer place-items-center rounded-lg bg-black/25 hover:bg-black/40 ${songOn ? '' : 'opacity-60'}`}
