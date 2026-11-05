@@ -20,6 +20,8 @@ class MainActivity : ComponentActivity() {
         val bars = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
         enableEdgeToEdge(bars, bars)
         Sfx.init(this)
+        Music.init(this)
+        Art.init(this)
         // Ni la TV ni el móvil deben apagarse a mitad de partida
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val tv = BuildConfig.IS_TV
@@ -34,6 +36,16 @@ class MainActivity : ComponentActivity() {
             if (tv) vm.startAsTv() else openLink(intent)
         }
         setContent { App(vm, tv) }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Music.pause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Music.resume()
     }
 
     override fun onNewIntent(intent: Intent) {

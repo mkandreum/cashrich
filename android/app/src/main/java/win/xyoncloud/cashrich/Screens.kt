@@ -206,7 +206,7 @@ private fun JoinForm(title: String, cta: String, taken: List<String>, submit: su
                             .graphicsLayer { alpha = if (isTaken) 0.25f else 1f }
                             .clickableNoRipple { if (!isTaken) { Sfx.tap(); picked = a } },
                         contentAlignment = Alignment.Center,
-                    ) { Text(a, fontSize = 22.sp) }
+                    ) { Glyph(a, 34.dp) }
                 }
             }
         }
@@ -439,7 +439,10 @@ private fun TvGame(vm: GameViewModel, room: Snapshot) {
                 Board3D(room, mv, Modifier.fillMaxSize())
                 PanelDark(Modifier.align(Alignment.TopStart).padding(10.dp).widthIn(max = 420.dp), padding = 9.dp) {
                     val current = room.current
-                    D(if (room.phase == "over") "Fin de la partida" else "${current?.avatar} Turno de ${current?.name}", color = C.Gold, size = 21.sp, maxLines = 1)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        if (room.phase != "over" && current != null) Glyph(current.avatar, 26.dp)
+                        D(if (room.phase == "over") "Fin de la partida" else "Turno de ${current?.name}", color = C.Gold, size = 21.sp, maxLines = 1)
+                    }
                     T(narration(room, mv), color = C.Cream, size = 15.sp, weight = FontWeight.SemiBold, maxLines = 2)
                 }
                 val card = if (mv == null) room.lastCard else null
@@ -545,6 +548,7 @@ private fun BoardBox(room: Snapshot, mv: DiceMotion?, modifier: Modifier) {
 @Composable
 private fun TopBar(vm: GameViewModel, room: Snapshot, toggleBoard: (() -> Unit)?) {
     var muted by remember { mutableStateOf(Sfx.muted) }
+    var song by remember { mutableStateOf(Music.enabled) }
     val isAdmin = vm.session?.playerId == room.adminId
     val canSkip = isAdmin && room.phase == "playing" && room.current?.id != vm.session?.playerId
     @Composable
@@ -560,6 +564,7 @@ private fun TopBar(vm: GameViewModel, room: Snapshot, toggleBoard: (() -> Unit)?
         Box(Modifier.clip(RoundedCornerShape(8.dp)).background(Color.Black.copy(alpha = 0.25f)).padding(horizontal = 8.dp, vertical = 4.dp)) { D(room.code, color = C.Cream, size = 16.sp) }
         if (canSkip) Button(Lucide.FastForward) { vm.send("skipTurn") }
         if (toggleBoard != null) Button(Lucide.Tv, toggleBoard)
+        Button(if (song) Lucide.Music2 else Lucide.Music) { Music.enabled = !song; song = !song }
         Button(if (muted) Lucide.VolumeX else Lucide.Volume2) { Sfx.muted = !muted; muted = !muted }
     }
 }
@@ -572,14 +577,14 @@ private fun Victory(vm: GameViewModel, room: Snapshot, tv: Boolean) {
     LaunchedEffect(Unit) { pop.animateTo(1f, spring(dampingRatio = 0.45f, stiffness = 200f)) }
     Box(Modifier.fillMaxSize().background(C.Felt950.copy(alpha = 0.85f)).padding(16.dp), contentAlignment = Alignment.Center) {
         Column(Modifier.widthIn(max = 460.dp).graphicsLayer { scaleX = pop.value; scaleY = pop.value }, horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(winner?.avatar ?: "🏆", fontSize = 64.sp)
+            Glyph(winner?.avatar ?: "trophy", 88.dp)
             Sticker("¡${winner?.name ?: "Nadie"} gana!", C.Gold, 42.sp, align = TextAlign.Center)
             T(room.message, color = C.Cream, size = 16.sp, weight = FontWeight.SemiBold, align = TextAlign.Center, modifier = Modifier.padding(vertical = 8.dp))
             Panel(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
                 ranking.forEachIndexed { i, p ->
                     Row(Modifier.padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         D("${i + 1}", size = 16.sp, modifier = Modifier.width(18.dp))
-                        Text(p.avatar, fontSize = 18.sp)
+                        Glyph(p.avatar, 26.dp)
                         T(p.name, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.weight(1f))
                         D(money(p.netWorth), color = C.MintDark, size = 16.sp, maxLines = 1)
                     }

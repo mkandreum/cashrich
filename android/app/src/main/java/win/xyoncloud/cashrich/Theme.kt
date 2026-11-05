@@ -58,6 +58,9 @@ object Looks {
     val salida by lazy { Look(C.Mint, C.MintDark, INK2, Lucide.Flag, "Salida") }
     val auditoria by lazy { Look(Color(0xFF7C8BD6), Color(0xFF4553A3), INK2, Lucide.Scale, "Auditoría") }
     val oportunidad by lazy { Look(C.Coral, C.CoralDark, Color.White, Lucide.Rocket, "Oportunidad") }
+    val impuesto by lazy { Look(Color(0xFF9AA3B5), Color(0xFF5E6779), INK2, Lucide.Receipt, "Hacienda") }
+    val formacion by lazy { Look(Color(0xFF4FD1C5), Color(0xFF23958B), INK2, Lucide.GraduationCap, "Formación") }
+    val imprevisto by lazy { Look(Color(0xFFFF9F43), Color(0xFFC46A12), C.Ink, Lucide.TriangleAlert, "Imprevisto") }
 
     fun forCell(cell: Cell, index: Int, lane: String): Look = when {
         lane == "board" && index == 0 -> salida
@@ -69,6 +72,9 @@ object Looks {
         cell.kind == "mercado" -> mercado
         cell.kind == "gusto" -> gusto
         cell.kind == "banco" -> banco
+        cell.kind == "impuesto" -> impuesto
+        cell.kind == "formacion" -> formacion
+        cell.kind == "imprevisto" -> imprevisto
         else -> sueno
     }
 

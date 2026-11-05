@@ -1,14 +1,24 @@
 /* Tablero 3D: edificios en cada casilla, ciudad de activos en la plaza, dado y fichas físicas. */
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { board as BOARD, ratoneraPos as BOARD_POS, via as VIA, viaPos as VIA_POS } from '../../data.json';
 import MODELS from '../../shared/models3d.json';
 import type { Asset, Snapshot } from './api';
 import type { Motion } from './hooks';
+import { avatarShapes, paintShapes } from './art';
 
 type Part = { s: string; p: number[]; z: number[]; c: string; r?: number[]; spin?: number; spinZ?: number };
 const parts = (name: string) => (MODELS as unknown as Record<string, Part[]>)[name] ?? [];
 
 const CELL = 1.12;
+const COLS = 10; // rejilla 10x8: anillo de 32 casillas y vía rápida de 16
+const ROWS = 8;
+const LANE_COLS = COLS - 2;
+const TOP = -CELL * (ROWS - 2) / 2; // borde superior del interior
+const LANE_BOTTOM = TOP + 2 * CELL * 0.96 + 0.04;
+const PLAZA_BOTTOM = CELL * (ROWS - 2) / 2;
+const PLAZA_Z = (LANE_BOTTOM + PLAZA_BOTTOM) / 2;
+const PLAZA_D = PLAZA_BOTTOM - LANE_BOTTOM - 0.1;
 const LANE_Y = 0.32;
 const LANE_SCALE = 0.86;
 const TILES: Record<string, { color: string; model: string; label: string; ink: string }> = {
@@ -22,6 +32,9 @@ const TILES: Record<string, { color: string; model: string; label: string; ink: 
   salida: { color: '#3DDC97', model: 'arch', label: 'SALIDA', ink: '#10143A' },
   auditoria: { color: '#7C8BD6', model: 'dome', label: 'AUDITORÍA', ink: '#10143A' },
   oportunidad: { color: '#FF5A4E', model: 'rocket', label: 'OPORTUNIDAD', ink: '#FFFFFF' },
+  impuesto: { color: '#9AA3B5', model: 'hacienda', label: 'HACIENDA', ink: '#10143A' },
+  formacion: { color: '#4FD1C5', model: 'school', label: 'FORMACIÓN', ink: '#10143A' },
+  imprevisto: { color: '#FF9F43', model: 'storm', label: 'IMPREVISTO', ink: '#1D1A33' },
 };
 const ASSET_MODEL: Record<string, string> = {
   VIVIENDA: 'house', COMERCIAL: 'tower', INDUSTRIAL: 'factory', TURISMO: 'hotel', TERRENO: 'land', ENERGÍA: 'turbine', AGRO: 'farm',
@@ -40,10 +53,10 @@ function tileLook(track: 'board' | 'via', index: number) {
 /* Centro de una casilla en el mundo */
 function tileSpot(track: 'board' | 'via', index: number) {
   const [col, row] = track === 'board' ? BOARD_POS[index] : VIA_POS[index];
-  if (track === 'board') return new THREE.Vector3((col - 4.5) * CELL, 0.1, (row - 3.5) * CELL);
-  const width = 6 * CELL;
-  const cell = (width - 0.16) / 6;
-  return new THREE.Vector3(-width / 2 + 0.08 + cell * (col - 1.5), LANE_Y + 0.1, -CELL * 2 + 0.56 + (row - 2) * CELL * 0.96 + 0.02);
+  if (track === 'board') return new THREE.Vector3((col - (COLS + 1) / 2) * CELL, 0.1, (row - (ROWS + 1) / 2) * CELL);
+  const width = LANE_COLS * CELL;
+  const cell = (width - 0.16) / LANE_COLS;
+  return new THREE.Vector3(-width / 2 + 0.08 + cell * (col - 1.5), LANE_Y + 0.1, TOP + 0.56 + (row - 2) * CELL * 0.96 + 0.02);
 }
 
 const easeOut = (t: number) => 1 - (1 - t) ** 3;
@@ -90,10 +103,15 @@ class Pawn {
     g.lineWidth = 8;
     g.strokeStyle = '#ffffff';
     g.stroke();
-    g.font = '70px serif';
-    g.textAlign = 'center';
-    g.textBaseline = 'middle';
-    g.fillText(emoji, 64, 70);
+    const shapes = avatarShapes(emoji);
+    if (shapes) {
+      paintShapes(g, shapes, 24, 22, 80);
+    } else {
+      g.font = '70px serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText(emoji, 64, 70);
+    }
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true }));
@@ -143,6 +161,11 @@ export class BoardScene {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.12;
+    // Reflejos suaves en cristales, metales y monedas
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    this.scene.environmentIntensity = 0.12;
+    pmrem.dispose();
     host.appendChild(this.renderer.domElement);
     this.renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
     this.buildWorld();
@@ -304,25 +327,25 @@ export class BoardScene {
     sun.castShadow = true;
     const small = window.innerWidth < 800;
     sun.shadow.mapSize.setScalar(small ? 1024 : 2048);
-    sun.shadow.camera.left = -8;
-    sun.shadow.camera.right = 8;
-    sun.shadow.camera.top = 7;
-    sun.shadow.camera.bottom = -7;
-    sun.shadow.camera.far = 30;
+    sun.shadow.camera.left = -10;
+    sun.shadow.camera.right = 10;
+    sun.shadow.camera.top = 9;
+    sun.shadow.camera.bottom = -9;
+    sun.shadow.camera.far = 34;
     sun.shadow.bias = -0.0006;
     this.scene.add(sun);
 
     // Mesa de madera y carretera alrededor
-    const wood = new THREE.Mesh(new THREE.BoxGeometry(CELL * 8 + 1.25, 0.34, CELL * 6 + 1.25), new THREE.MeshStandardMaterial({ color: '#6D4326', roughness: 0.72 }));
+    const wood = new THREE.Mesh(new THREE.BoxGeometry(CELL * COLS + 1.25, 0.34, CELL * ROWS + 1.25), new THREE.MeshStandardMaterial({ color: '#6D4326', roughness: 0.72 }));
     wood.position.y = -0.2;
     wood.receiveShadow = true;
     wood.castShadow = true;
     this.scene.add(wood);
-    const road = new THREE.Mesh(new THREE.BoxGeometry(CELL * 8 + 0.95, 0.02, CELL * 6 + 0.95), new THREE.MeshStandardMaterial({ color: '#39404F', roughness: 0.9 }));
+    const road = new THREE.Mesh(new THREE.BoxGeometry(CELL * COLS + 0.95, 0.02, CELL * ROWS + 0.95), new THREE.MeshStandardMaterial({ color: '#39404F', roughness: 0.9 }));
     road.position.y = -0.02;
     road.receiveShadow = true;
     this.scene.add(road);
-    const base = new THREE.Mesh(new THREE.BoxGeometry(CELL * 8 + 0.02, 0.04, CELL * 6 + 0.02), new THREE.MeshStandardMaterial({ color: '#2B6B55', roughness: 0.95 }));
+    const base = new THREE.Mesh(new THREE.BoxGeometry(CELL * COLS + 0.02, 0.04, CELL * ROWS + 0.02), new THREE.MeshStandardMaterial({ color: '#2B6B55', roughness: 0.95 }));
     base.position.y = -0.005;
     base.receiveShadow = true;
     this.scene.add(base);
@@ -331,36 +354,36 @@ export class BoardScene {
     BOARD.forEach((_, i) => this.addTile('board', i));
 
     // Plataforma elevada de la vía rápida, con borde de oro
-    const laneW = 6 * CELL;
+    const laneW = LANE_COLS * CELL;
     const laneD = 2 * CELL * 0.96;
     const lane = new THREE.Mesh(new THREE.BoxGeometry(laneW, LANE_Y, laneD), new THREE.MeshStandardMaterial({ color: '#1C2350', roughness: 0.4 }));
-    lane.position.set(0, LANE_Y / 2 - 0.02, -CELL + 0.02);
+    lane.position.set(0, LANE_Y / 2 - 0.02, TOP + CELL + 0.02);
     lane.castShadow = true;
     lane.receiveShadow = true;
     this.scene.add(lane);
     this.laneGate = new THREE.MeshStandardMaterial({ color: '#FFC83D', roughness: 0.25, metalness: 0.7, emissive: '#FFC83D', emissiveIntensity: 0.15 });
     const rim = new THREE.Mesh(new THREE.BoxGeometry(laneW + 0.05, 0.06, laneD + 0.05), this.laneGate);
-    rim.position.set(0, LANE_Y - 0.03, -CELL + 0.02);
+    rim.position.set(0, LANE_Y - 0.03, TOP + CELL + 0.02);
     this.scene.add(rim);
     VIA.forEach((_, i) => this.addTile('via', i));
 
     // Plaza central: aquí se levanta la ciudad de cada jugador
-    const plazaD = 2 * CELL - 0.1;
+    const plazaD = PLAZA_D;
     const plaza = new THREE.Mesh(new THREE.BoxGeometry(laneW, 0.06, plazaD), new THREE.MeshStandardMaterial({ color: '#D9C9A0', roughness: 0.85 }));
-    plaza.position.set(0, 0.03, CELL + 0.02);
+    plaza.position.set(0, 0.03, PLAZA_Z + 0.02);
     plaza.receiveShadow = true;
     this.scene.add(plaza);
     const tray = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.8, 0.12, 40), new THREE.MeshStandardMaterial({ color: '#0D5F4E', roughness: 0.95 }));
-    tray.position.set(0, 0.1, CELL + 0.02);
+    tray.position.set(0, 0.1, PLAZA_Z + 0.02);
     tray.receiveShadow = true;
     this.scene.add(tray);
     this.scene.add(this.cityRoot);
     this.buildDie();
 
     // Bosque y nubes alrededor de la mesa
-    const edgeX = CELL * 4 + 0.95;
-    const edgeZ = CELL * 3 + 0.9;
-    for (let i = 0; i < 26; i++) {
+    const edgeX = CELL * COLS / 2 + 0.95;
+    const edgeZ = CELL * ROWS / 2 + 0.9;
+    for (let i = 0; i < 34; i++) {
       const tree = this.buildModel('tree');
       const side = i % 4;
       const along = Math.random() * 2 - 1;
@@ -380,7 +403,7 @@ export class BoardScene {
         puff.scale.set(0.7 + Math.random() * 0.4, 0.42, 0.6);
         cloud.add(puff);
       }
-      cloud.position.set(-7 + i * 4.6, 1.6 + (i % 2) * 0.5, -6.2 - (i % 2) * 0.8);
+      cloud.position.set(-8.5 + i * 5.6, 1.6 + (i % 2) * 0.5, -6.2 - (i % 2) * 0.8);
       this.clouds.push(cloud);
       this.scene.add(cloud);
     }
@@ -429,7 +452,7 @@ export class BoardScene {
     };
     this.die = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.62, 0.62), [3, 4, 1, 6, 2, 5].map(face));
     this.die.castShadow = true;
-    this.die.position.set(0, 0.47, CELL + 0.02);
+    this.die.position.set(0, 0.47, PLAZA_Z + 0.02);
     this.die.rotation.y = 0.5;
     this.scene.add(this.die);
   }
@@ -492,7 +515,7 @@ export class BoardScene {
     const moving = !!motion && !motion.rolling;
     this.zoomTarget = moving ? 0.74 : motion?.rolling ? 0.86 : 1;
     if (moving && focus) this.focusTarget.copy(tileSpot(focus.track, focus.at)).multiplyScalar(0.7);
-    else if (motion?.rolling) this.focusTarget.set(0, 0, CELL * 0.8);
+    else if (motion?.rolling) this.focusTarget.set(0, 0, PLAZA_Z * 0.8);
     else this.focusTarget.set(0, 0, 0);
 
     this.laneGate.emissiveIntensity = room.players.some((p) => p.escaped) ? 0.8 : 0.15;
@@ -534,21 +557,21 @@ export class BoardScene {
       this.cityRoot.remove(item.object);
       this.city.delete(id);
     });
-    const cols = 12;
-    const rows = 4;
-    const stepX = (6 * CELL - 0.2) / cols;
-    const stepZ = (2 * CELL - 0.3) / rows;
+    const cols = 16;
+    const rows = 7;
+    const stepX = (LANE_COLS * CELL - 0.2) / cols;
+    const stepZ = (PLAZA_D - 0.2) / rows;
     const slots: [number, number][] = [];
     for (let r = rows - 1; r >= 0; r--) {
       for (let c = 0; c < cols; c++) {
-        const inTray = c >= 4 && c <= 7;
+        const inTray = c >= 6 && c <= 9 && r >= 2 && r <= 4;
         if (!inTray) slots.push([c, r]);
       }
     }
     all.slice(-slots.length).forEach(({ asset, color }, i) => {
       const [c, r] = slots[i];
-      const x = -3 * CELL + 0.1 + stepX * (c + 0.5);
-      const z = 0.08 + stepZ * (r + 0.5) + 0.06;
+      const x = -LANE_COLS * CELL / 2 + 0.1 + stepX * (c + 0.5);
+      const z = LANE_BOTTOM + 0.1 + stepZ * (r + 0.5) + 0.06;
       let item = this.city.get(asset.id);
       if (!item) {
         const object = new THREE.Group();
@@ -626,14 +649,14 @@ export class BoardScene {
     const swayZ = this.calm ? 0 : Math.cos(now * 0.17) * 0.3;
     const aspectFit = Math.max(1, 1.34 / this.camera.aspect);
     const d = this.zoom * aspectFit;
-    this.camera.position.set(this.focus.x + swayX, 12.2 * d, this.focus.z + 8.9 * d + swayZ);
+    this.camera.position.set(this.focus.x + swayX, 15.2 * d, this.focus.z + 11.2 * d + swayZ);
     this.camera.lookAt(this.focus.x, 0, this.focus.z + 0.32);
     this.renderer.render(this.scene, this.camera);
   }
 
   private perimeter() {
-    const w = CELL * 8 + 0.72;
-    const d = CELL * 6 + 0.72;
+    const w = CELL * COLS + 0.72;
+    const d = CELL * ROWS + 0.72;
     const total = 2 * (w + d);
     return (at: number): [number, number, number] => {
       let run = at * total;

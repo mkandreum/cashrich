@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import type { Snapshot } from '../lib/api';
 import { Logo } from '../components/Logo';
+import { Avatar } from '../components/Avatar';
 
 const LEVELS = [
   ['facil', 'Fácil', 'Más efectivo inicial, crédito barato y mercados tranquilos.'],
@@ -92,7 +93,7 @@ export function Lobby({ room, meId, isHost, tv, send }: {
                     transition={{ type: 'spring', stiffness: 380, damping: 16 }}
                     className="relative flex flex-col items-center rounded-2xl bg-white/10 p-2.5"
                   >
-                    <span className="grid size-16 place-items-center rounded-full border-[3px] border-white text-4xl" style={{ background: p.color }}>{p.avatar}</span>
+                    <span className="grid size-16 place-items-center rounded-full border-[3px] border-white text-4xl" style={{ background: p.color }}><Avatar id={p.avatar} /></span>
                     <span className="mt-1 max-w-full truncate font-semibold">{p.name}{p.id === meId ? ' (tú)' : ''}</span>
                     {p.id === room.adminId && <span className="text-xs font-semibold text-gold">Admin</span>}
                     {isHost && p.id !== meId && (

@@ -114,9 +114,9 @@ body {
 .board {
   container-type: inline-size;
   position: relative;
-  width: min(100%, calc((100dvh - 2rem) * 4 / 3));
+  width: min(100%, calc((100dvh - 2rem) * 5 / 4));
   margin-inline: auto;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 5 / 4;
   border-radius: clamp(10px, 2cqw, 22px);
   background: linear-gradient(160deg, #6d4326, #3f2412);
   border: 3px solid var(--color-ink);
@@ -126,8 +126,8 @@ body {
   position: absolute;
   inset: 1.1cqw;
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  grid-template-rows: repeat(6, 1fr);
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(8, 1fr);
   gap: 0.7cqw;
 }
 
@@ -165,11 +165,11 @@ body {
 }
 
 .lane {
-  grid-column: 2 / 8;
+  grid-column: 2 / 10;
   grid-row: 2 / 4;
   position: relative;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(2, 1fr);
   gap: 0.6cqw;
   padding: 0.9cqw;
@@ -181,8 +181,8 @@ body {
 .lane-locked .tile { filter: saturate(0.45) brightness(0.72); }
 
 .center {
-  grid-column: 2 / 8;
-  grid-row: 4 / 6;
+  grid-column: 2 / 10;
+  grid-row: 4 / 8;
   position: relative;
   display: flex;
   align-items: center;

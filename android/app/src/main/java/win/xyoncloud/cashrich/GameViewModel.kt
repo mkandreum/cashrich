@@ -94,6 +94,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun leave() {
+        Music.play(null)
         streamJob?.cancel()
         stageJob?.cancel()
         code = null
@@ -250,6 +251,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         val from = if (mover.escaped) mover.vpos else mover.pos
         staging = true
         Sfx.roll()
+        Music.duck(1000)
         motion = DiceMotion(mover.id, lane, from, 0, next.dice, rolling = true)
         stageJob = viewModelScope.launch {
             delay(ROLL_MS)
@@ -267,13 +269,20 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     private fun show(next: Snapshot) {
         val before = shown
         shown = next
+        Music.play(
+            when {
+                next.phase == "lobby" -> Mood.LOBBY
+                next.players.any { it.escaped && !it.bankrupt } -> Mood.FAST
+                else -> Mood.GAME
+            },
+        )
         if (before != null && before.code == next.code) celebrate(before, next)
     }
 
     private fun celebrate(before: Snapshot, room: Snapshot) {
         val meId = session?.playerId
         val cardName = room.lastCard?.name
-        if (cardName != null && cardName != before.lastCard?.name) Sfx.card()
+        if (cardName != null && cardName != before.lastCard?.name) Sfx.card(); Music.duck(900)
 
         val mine = room.players.find { it.id == meId }
         val mineBefore = before.players.find { it.id == meId }
@@ -284,13 +293,13 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         room.players.forEach { p ->
             val was = before.players.find { it.id == p.id } ?: return@forEach
             if (p.escaped && !was.escaped) {
-                Sfx.fanfare()
+                Sfx.fanfare(); Music.duck(1800)
                 confetti++
-                popBanner("🔓", "¡${p.name} escapó!", "Sus rentas ya pagan su vida. Rumbo a la vía rápida.")
+                popBanner("unlock", "¡${p.name} escapó!", "Sus rentas ya pagan su vida. Rumbo a la vía rápida.")
             }
             if (p.bankrupt && !was.bankrupt) {
                 Sfx.loss()
-                popBanner("💀", "${p.name} quebró", "Queda fuera de la partida.")
+                popBanner("skull", "${p.name} quebró", "Queda fuera de la partida.")
             }
         }
 
@@ -298,15 +307,15 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         if (turnMoved && room.phase == "playing") {
             val current = room.current
             if (current != null && current.id == meId) {
-                Sfx.turn()
+                Sfx.turn(); Music.duck(800)
                 popBanner(current.avatar, "¡Te toca!")
             } else if (tvMode && current != null) {
-                Sfx.turn()
+                Sfx.turn(); Music.duck(800)
                 popBanner(current.avatar, "Turno de ${current.name}")
             }
         }
         if (before.phase != "over" && room.phase == "over") {
-            Sfx.fanfare()
+            Sfx.fanfare(); Music.duck(1800)
             viewModelScope.launch {
                 repeat(3) {
                     confetti++

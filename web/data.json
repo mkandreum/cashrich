@@ -905,84 +905,14 @@
    "sub": "Gasta o ahorra"
   },
   {
-   "name": "Oportunidad pequeña",
-   "kind": "peq",
-   "sub": "Roba 1 carta"
-  },
-  {
-   "name": "COBRA",
-   "kind": "cobrar",
-   "sub": "Cobra tu flujo de caja"
-  },
-  {
-   "name": "Oportunidad grande",
-   "kind": "grande",
-   "sub": "Roba 1 carta"
-  },
-  {
-   "name": "COBRA",
-   "kind": "cobrar",
-   "sub": "Cobra tu flujo de caja"
+   "name": "Hacienda",
+   "kind": "impuesto",
+   "sub": "Paga el 15 % de tus ingresos del mes"
   },
   {
    "name": "Oportunidad pequeña",
    "kind": "peq",
    "sub": "Roba 1 carta"
-  },
-  {
-   "name": "Mercado",
-   "kind": "mercado",
-   "sub": "Roba 1 carta"
-  },
-  {
-   "name": "Oportunidad grande",
-   "kind": "grande",
-   "sub": "Roba 1 carta"
-  },
-  {
-   "name": "Oportunidad pequeña",
-   "kind": "peq",
-   "sub": "Roba 1 carta"
-  },
-  {
-   "name": "COBRA",
-   "kind": "cobrar",
-   "sub": "Cobra tu flujo de caja"
-  },
-  {
-   "name": "Gusto",
-   "kind": "gusto",
-   "sub": "Gasta o ahorra"
-  },
-  {
-   "name": "Oportunidad pequeña",
-   "kind": "peq",
-   "sub": "Roba 1 carta"
-  },
-  {
-   "name": "Mercado",
-   "kind": "mercado",
-   "sub": "Roba 1 carta"
-  },
-  {
-   "name": "Oportunidad grande",
-   "kind": "grande",
-   "sub": "Roba 1 carta"
-  },
-  {
-   "name": "Oportunidad pequeña",
-   "kind": "peq",
-   "sub": "Roba 1 carta"
-  },
-  {
-   "name": "COBRA",
-   "kind": "cobrar",
-   "sub": "Cobra tu flujo de caja"
-  },
-  {
-   "name": "COBRA",
-   "kind": "cobrar",
-   "sub": "Cobra tu flujo de caja"
   },
   {
    "name": "Oportunidad grande",
@@ -992,6 +922,11 @@
   {
    "name": "Mercado",
    "kind": "mercado",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
    "sub": "Roba 1 carta"
   },
   {
@@ -1003,6 +938,111 @@
    "name": "Oportunidad pequeña",
    "kind": "peq",
    "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Formación",
+   "kind": "formacion",
+   "sub": "Paga $1.000: tiras 2 dados 3 turnos"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo de caja"
+  },
+  {
+   "name": "Oportunidad grande",
+   "kind": "grande",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Mercado",
+   "kind": "mercado",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Imprevisto",
+   "kind": "imprevisto",
+   "sub": "Gasto inesperado (un seguro lo cubre)"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Gusto",
+   "kind": "gusto",
+   "sub": "Gasta o ahorra"
+  },
+  {
+   "name": "Oportunidad grande",
+   "kind": "grande",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Mercado",
+   "kind": "mercado",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo de caja"
+  },
+  {
+   "name": "Banco / Caridad",
+   "kind": "banco",
+   "sub": "Préstamo o donación"
+  },
+  {
+   "name": "Oportunidad grande",
+   "kind": "grande",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Imprevisto",
+   "kind": "imprevisto",
+   "sub": "Gasto inesperado (un seguro lo cubre)"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "Gusto",
+   "kind": "gusto",
+   "sub": "Gasta o ahorra"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo de caja"
+  },
+  {
+   "name": "Hacienda",
+   "kind": "impuesto",
+   "sub": "Paga el 15 % de tus ingresos del mes"
+  },
+  {
+   "name": "Oportunidad pequeña",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo de caja"
   }
  ],
  "via": [
@@ -1065,56 +1105,100 @@
    "name": "Mercado",
    "kind": "mercado",
    "sub": "Roba 1 carta"
+  },
+  {
+   "name": "COBRA",
+   "kind": "cobrar",
+   "sub": "Cobra tu flujo x10"
+  },
+  {
+   "name": "Oportunidad",
+   "kind": "peq",
+   "sub": "Roba 1 carta"
+  },
+  {
+   "name": "SUEÑO",
+   "kind": "sueno",
+   "sub": "Compra tu sueño"
+  },
+  {
+   "name": "Mercado",
+   "kind": "mercado",
+   "sub": "Roba 1 carta"
   }
  ],
  "ratoneraPos": [
   [
    1,
-   6
+   8
   ],
   [
    2,
-   6
+   8
   ],
   [
    3,
-   6
+   8
   ],
   [
    4,
-   6
+   8
   ],
   [
    5,
-   6
+   8
   ],
   [
    6,
-   6
+   8
   ],
   [
    7,
-   6
+   8
   ],
   [
    8,
+   8
+  ],
+  [
+   9,
+   8
+  ],
+  [
+   10,
+   8
+  ],
+  [
+   10,
+   7
+  ],
+  [
+   10,
    6
   ],
   [
-   8,
+   10,
    5
   ],
   [
-   8,
+   10,
    4
   ],
   [
-   8,
+   10,
    3
   ],
   [
-   8,
+   10,
    2
+  ],
+  [
+   10,
+   1
+  ],
+  [
+   9,
+   1
   ],
   [
    8,
@@ -1163,6 +1247,14 @@
   [
    1,
    5
+  ],
+  [
+   1,
+   6
+  ],
+  [
+   1,
+   7
   ]
  ],
  "viaPos": [
@@ -1189,6 +1281,22 @@
   [
    7,
    2
+  ],
+  [
+   8,
+   2
+  ],
+  [
+   9,
+   2
+  ],
+  [
+   9,
+   3
+  ],
+  [
+   8,
+   3
   ],
   [
    7,

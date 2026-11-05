@@ -38,6 +38,14 @@ private data class Part(
 )
 
 private const val CELL = 1.12f
+private const val COLS = 10 // rejilla 10x8: anillo de 32 casillas y vía rápida de 16
+private const val ROWS = 8
+private const val LANE_COLS = COLS - 2
+private const val TOP = -CELL * (ROWS - 2) / 2f
+private const val LANE_BOTTOM = TOP + 2 * CELL * 0.96f + 0.04f
+private const val PLAZA_BOTTOM = CELL * (ROWS - 2) / 2f
+private const val PLAZA_Z = (LANE_BOTTOM + PLAZA_BOTTOM) / 2f
+private const val PLAZA_D = PLAZA_BOTTOM - LANE_BOTTOM - 0.1f
 private const val LANE_Y = 0.32f
 private const val STRIDE = 12 // pos3 normal3 color3 win uv2
 
@@ -53,6 +61,9 @@ private val TILES = mapOf(
     "salida" to TileLook("#3DDC97", "arch", "SALIDA", "#10143A"),
     "auditoria" to TileLook("#7C8BD6", "dome", "AUDITORÍA", "#10143A"),
     "oportunidad" to TileLook("#FF5A4E", "rocket", "OPORTUNIDAD", "#FFFFFF"),
+    "impuesto" to TileLook("#9AA3B5", "hacienda", "HACIENDA", "#10143A"),
+    "formacion" to TileLook("#4FD1C5", "school", "FORMACIÓN", "#10143A"),
+    "imprevisto" to TileLook("#FF9F43", "storm", "IMPREVISTO", "#1D1A33"),
 )
 private val ASSET_MODEL = mapOf(
     "VIVIENDA" to "house", "COMERCIAL" to "tower", "INDUSTRIAL" to "factory", "TURISMO" to "hotel", "TERRENO" to "land", "ENERGÍA" to "turbine", "AGRO" to "farm",
@@ -75,12 +86,12 @@ private class V3(val x: Float, val y: Float, val z: Float)
 private fun tileSpot(track: String, i: Int): V3 {
     if (track == "board") {
         val (col, row) = BOARD_POS[i]
-        return V3((col - 4.5f) * CELL, 0.1f, (row - 3.5f) * CELL)
+        return V3((col - (COLS + 1) / 2f) * CELL, 0.1f, (row - (ROWS + 1) / 2f) * CELL)
     }
     val (col, row) = VIA_POS[i]
-    val width = 6 * CELL
-    val cell = (width - 0.16f) / 6
-    return V3(-width / 2 + 0.08f + cell * (col - 1.5f), LANE_Y + 0.1f, -CELL * 2 + 0.56f + (row - 2) * CELL * 0.96f + 0.02f)
+    val width = LANE_COLS * CELL
+    val cell = (width - 0.16f) / LANE_COLS
+    return V3(-width / 2 + 0.08f + cell * (col - 1.5f), LANE_Y + 0.1f, TOP + 0.56f + (row - 2) * CELL * 0.96f + 0.02f)
 }
 
 private fun rgb(hex: String) = AColor.parseColor(hex).let { floatArrayOf(AColor.red(it) / 255f, AColor.green(it) / 255f, AColor.blue(it) / 255f) }
@@ -434,7 +445,7 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
         val lightView = FloatArray(16)
         val lightProj = FloatArray(16)
         Matrix.setLookAtM(lightView, 0, -5f, 11f, 6f, 0f, 0f, 0f, 0f, 1f, 0f)
-        Matrix.orthoM(lightProj, 0, -8.5f, 8.5f, -7f, 7f, 1f, 30f)
+        Matrix.orthoM(lightProj, 0, -10.5f, 10.5f, -9f, 9f, 1f, 34f)
         Matrix.multiplyMM(lightVP, 0, lightProj, 0, lightView, 0)
         val q = FloatArray(STRIDE * 6)
         val corners = listOf(-0.5f to -0.5f, 0.5f to -0.5f, 0.5f to 0.5f, -0.5f to -0.5f, 0.5f to 0.5f, -0.5f to 0.5f)
@@ -512,16 +523,16 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
     private fun buildWorld() {
         val b = Batch()
         val box = Shapes.box
-        b.add(box, trs(0f, -0.2f, 0f, CELL * 8 + 1.25f, 0.34f, CELL * 6 + 1.25f), rgb("#6D4326"))
-        b.add(box, trs(0f, -0.02f, 0f, CELL * 8 + 0.95f, 0.02f, CELL * 6 + 0.95f), rgb("#39404F"))
-        b.add(box, trs(0f, -0.005f, 0f, CELL * 8 + 0.02f, 0.04f, CELL * 6 + 0.02f), rgb("#2B6B55"))
+        b.add(box, trs(0f, -0.2f, 0f, CELL * COLS + 1.25f, 0.34f, CELL * ROWS + 1.25f), rgb("#6D4326"))
+        b.add(box, trs(0f, -0.02f, 0f, CELL * COLS + 0.95f, 0.02f, CELL * ROWS + 0.95f), rgb("#39404F"))
+        b.add(box, trs(0f, -0.005f, 0f, CELL * COLS + 0.02f, 0.04f, CELL * ROWS + 0.02f), rgb("#2B6B55"))
 
-        val laneW = 6 * CELL
+        val laneW = LANE_COLS * CELL
         val laneD = 2 * CELL * 0.96f
-        b.add(box, trs(0f, LANE_Y / 2 - 0.02f, -CELL + 0.02f, laneW, LANE_Y, laneD), rgb("#1C2350"))
-        b.add(box, trs(0f, LANE_Y - 0.03f, -CELL + 0.02f, laneW + 0.05f, 0.06f, laneD + 0.05f), rgb("#FFC83D"))
-        b.add(box, trs(0f, 0.03f, CELL + 0.02f, laneW, 0.06f, 2 * CELL - 0.1f), rgb("#D9C9A0"))
-        b.add(Shapes.cyl, trs(0f, 0.1f, CELL + 0.02f, 1.5f, 0.12f, 1.5f), rgb("#0D5F4E"))
+        b.add(box, trs(0f, LANE_Y / 2 - 0.02f, TOP + CELL + 0.02f, laneW, LANE_Y, laneD), rgb("#1C2350"))
+        b.add(box, trs(0f, LANE_Y - 0.03f, TOP + CELL + 0.02f, laneW + 0.05f, 0.06f, laneD + 0.05f), rgb("#FFC83D"))
+        b.add(box, trs(0f, 0.03f, PLAZA_Z + 0.02f, laneW, 0.06f, PLAZA_D), rgb("#D9C9A0"))
+        b.add(Shapes.cyl, trs(0f, 0.1f, PLAZA_Z + 0.02f, 1.5f, 0.12f, 1.5f), rgb("#0D5F4E"))
 
         fun tile(track: String, i: Int) {
             val look = tileLook(track, i)
@@ -539,9 +550,9 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
         VIA.indices.forEach { tile("via", it) }
 
         val rnd = Random(7)
-        val edgeX = CELL * 4 + 0.95f
-        val edgeZ = CELL * 3 + 0.9f
-        repeat(26) { i ->
+        val edgeX = CELL * COLS / 2f + 0.95f
+        val edgeZ = CELL * ROWS / 2f + 0.9f
+        repeat(34) { i ->
             val side = i % 4
             val along = rnd.nextFloat() * 2 - 1
             val out = 0.15f + rnd.nextFloat() * 0.8f
@@ -554,7 +565,7 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
         listOf("#FF5A4E", "#2FB5F5", "#FFC83D", "#FFFFFF", "#3DDC97").forEachIndexed { i, c ->
             cars += Triple(rgb(c), floatArrayOf(i / 5f), floatArrayOf(0.022f + (i % 3) * 0.006f))
         }
-        repeat(4) { i -> clouds += floatArrayOf(-7f + i * 4.6f, 1.6f + (i % 2) * 0.5f, -6.2f - (i % 2) * 0.8f) }
+        repeat(4) { i -> clouds += floatArrayOf(-8.5f + i * 5.6f, 1.6f + (i % 2) * 0.5f, -6.2f - (i % 2) * 0.8f) }
     }
 
     private fun buildDie() {
@@ -589,9 +600,14 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
         paint.color = AColor.WHITE
         canvas.drawCircle(64f, 64f, 58f, paint)
         paint.style = Paint.Style.FILL
-        paint.textSize = 66f
-        paint.textAlign = Paint.Align.CENTER
-        canvas.drawText(emoji, 64f, 88f, paint)
+        val shapes = Art.avatar(emoji)
+        if (shapes != null) {
+            paintShapesNative(canvas, shapes, 24f, 22f, 80f)
+        } else {
+            paint.textSize = 66f
+            paint.textAlign = Paint.Align.CENTER
+            canvas.drawText(emoji, 64f, 88f, paint)
+        }
         return upload(bitmap)
     }
 
@@ -603,7 +619,7 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
         val pieces = alive.map { p ->
             val moving = mv?.playerId == p.id
             val track = if (moving) mv!!.lane else if (p.escaped) "via" else "board"
-            val size = if (track == "via") 12 else 24
+            val size = if (track == "via") VIA.size else BOARD.size
             Piece(p, track, if (moving) (mv!!.from + mv.step) % size else if (track == "via") p.vpos else p.pos)
         }
         pawns.keys.filter { id -> alive.none { it.id == id } }.forEach { pawns.remove(it) }
@@ -637,7 +653,7 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
         zoomT = if (moving) 0.74f else if (mv?.rolling == true) 0.86f else 1f
         when {
             moving && focus != null -> tileSpot(focus.track, focus.at).let { focusTX = it.x * 0.7f; focusTZ = it.z * 0.7f }
-            mv?.rolling == true -> { focusTX = 0f; focusTZ = CELL * 0.8f }
+            mv?.rolling == true -> { focusTX = 0f; focusTZ = PLAZA_Z * 0.8f }
             else -> { focusTX = 0f; focusTZ = 0f }
         }
         if (mv?.rolling == true && dieT >= 1f && diePlaced != -mv.value) {
@@ -662,12 +678,12 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
         val all = room.players.flatMap { p -> p.assets.map { it to p.color } }
         val wanted = all.map { it.first.id }.toSet()
         city.keys.filter { it !in wanted }.forEach { city.remove(it) }
-        val cols = 12
-        val rows = 4
-        val stepX = (6 * CELL - 0.2f) / cols
-        val stepZ = (2 * CELL - 0.3f) / rows
+        val cols = 16
+        val rows = 7
+        val stepX = (LANE_COLS * CELL - 0.2f) / cols
+        val stepZ = (PLAZA_D - 0.2f) / rows
         val slots = buildList {
-            for (r in rows - 1 downTo 0) for (c in 0 until cols) if (c !in 4..7) add(c to r)
+            for (r in rows - 1 downTo 0) for (c in 0 until cols) if (!(c in 6..9 && r in 2..4)) add(c to r)
         }
         all.takeLast(slots.size).forEachIndexed { i, (asset, color) ->
             val (c, r) = slots[i]
@@ -676,8 +692,8 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
                 val mesh = modelMeshes.getOrPut(name) { Batch().also { addModel(it, name, identity, spin = false) }.mesh() }
                 CityItem(mesh, rgb(color), System.nanoTime())
             }
-            item.x = -3 * CELL + 0.1f + stepX * (c + 0.5f)
-            item.z = 0.14f + stepZ * (r + 0.5f)
+            item.x = -LANE_COLS * CELL / 2f + 0.1f + stepX * (c + 0.5f)
+            item.z = LANE_BOTTOM + 0.16f + stepZ * (r + 0.5f)
         }
     }
 
@@ -742,7 +758,7 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         // Dado: la cara elegida arriba; mientras rueda, voltea en el aire
         val tumble = 1 - easeOut(dieT)
-        val die = trs(0f, dieY, CELL + 0.02f)
+        val die = trs(0f, dieY, PLAZA_Z + 0.02f)
         Matrix.rotateM(die, 0, tumble * 917f, 1f, 0f, 0f)
         Matrix.rotateM(die, 0, tumble * 516f, 0f, 1f, 0f)
         Matrix.rotateM(die, 0, tumble * 688f, 0f, 0f, 1f)
@@ -759,8 +775,8 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     private fun perimeter(): (Float) -> Triple<Float, Float, Float> {
-        val w = CELL * 8 + 0.72f
-        val d = CELL * 6 + 0.72f
+        val w = CELL * COLS + 0.72f
+        val d = CELL * ROWS + 0.72f
         val total = 2 * (w + d)
         return { at ->
             var run = at * total
@@ -831,7 +847,7 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
         val swayX = sin(clock * 0.22f) * 0.75f
         val swayZ = cos(clock * 0.17f) * 0.3f
         val d = zoom * max(1f, 1.34f / aspect)
-        Matrix.setLookAtM(view, 0, focusX + swayX, 12.2f * d, focusZ + 8.9f * d + swayZ, focusX, 0f, focusZ + 0.32f, 0f, 1f, 0f)
+        Matrix.setLookAtM(view, 0, focusX + swayX, 15.2f * d, focusZ + 11.2f * d + swayZ, focusX, 0f, focusZ + 0.32f, 0f, 1f, 0f)
         Matrix.multiplyMM(viewProj, 0, proj, 0, view, 0)
 
         GL.glViewport(0, 0, width, height)

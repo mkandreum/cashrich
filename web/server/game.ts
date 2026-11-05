@@ -334,10 +334,10 @@ export function createEngine(S: GameState) {
     }
     S.dice = d;
     if (p.escaped) {
-      p.vpos = (p.vpos + d) % 12;
+      p.vpos = (p.vpos + d) % DATA.via.length;
       resolveVia(p, p.vpos);
     } else {
-      p.pos = (p.pos + d) % 24;
+      p.pos = (p.pos + d) % DATA.board.length;
       resolveSpace(p, p.pos);
     }
   }
@@ -378,6 +378,34 @@ export function createEngine(S: GameState) {
     } else if (kind === 'banco') {
       S.pending = { type: 'bank' };
       S.message = `${p.name} está en el banco: préstamo o caridad.`;
+    } else if (kind === 'impuesto') {
+      const tax = Math.round((Math.max(0, p.salary + p.passive) * 0.15) / 100) * 100;
+      p.cash -= tax;
+      S.message = `${p.name} pasa por Hacienda: paga ${clp(tax)} de impuestos.`;
+      log(S.message, p.id);
+      ensureSolvent(p);
+    } else if (kind === 'formacion') {
+      const fee = 1000;
+      if (p.cash >= fee) {
+        p.cash -= fee;
+        p.adv = Math.max(p.adv, 3);
+        S.message = `${p.name} hace un curso (${clp(fee)}): sus próximas 3 tiradas son la mejor de dos dados.`;
+      } else {
+        S.message = `${p.name} no tiene ${clp(fee)} para el curso de formación.`;
+      }
+      log(S.message, p.id);
+    } else if (kind === 'imprevisto') {
+      const bills = ['Avería del coche', 'Urgencia médica', 'Reparación del hogar', 'Multa de tráfico'];
+      const cost = [1200, 2000, 1500, 800][Math.floor(Math.random() * 4)];
+      const bill = bills[[1200, 2000, 1500, 800].indexOf(cost)];
+      if (p.assets.some((a) => a.tag === 'PROTECCIÓN')) {
+        S.message = `${p.name}: ${bill} (${clp(cost)}), pero su seguro lo cubre.`;
+      } else {
+        p.cash -= cost;
+        S.message = `${p.name}: ${bill}. Paga ${clp(cost)}. Un activo de PROTECCIÓN lo habría cubierto.`;
+        ensureSolvent(p);
+      }
+      log(S.message, p.id);
     } else if (kind === 'peq') {
       offerDeal('small', `${p.name} tiene una oportunidad: ¿compra o pasa?`);
     } else if (kind === 'grande') {

@@ -1,6 +1,6 @@
 import confetti from 'canvas-confetti';
 import { AnimatePresence, motion } from 'motion/react';
-import { BookOpen, Dices, FastForward, Maximize, Minimize, Tv, Users, Volume2, VolumeX, WalletCards, WifiOff } from 'lucide-react';
+import { BookOpen, Dices, Music, Music2, FastForward, Maximize, Minimize, Tv, Users, Volume2, VolumeX, WalletCards, WifiOff } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import { navigate } from '../App';
 import { ActionPanel } from '../components/ActionPanel';
@@ -14,7 +14,9 @@ import { joinRoom, loadSession, money, saveSession, sendAction, type PlayerView,
 import { useIsWide, useRoom, useStaged, type Motion } from '../lib/hooks';
 import { enterFullscreen, useFullscreen, useKeepAwake } from '../lib/fullscreen';
 import { isMuted, setMuted, sfx } from '../lib/sound';
+import { music, musicEnabled, setMusicEnabled, type Mood } from '../lib/music';
 import { Lobby } from './Lobby';
+import { Avatar, Glyph } from '../components/Avatar';
 
 const Board3D = lazy(() => import('../components/Board3D'));
 const webgl = (() => {
@@ -60,6 +62,15 @@ const throwConfetti = () => {
   void confetti({ particleCount: 140, spread: 90, origin: { y: 0.6 }, colors: ['#ffc83d', '#3ddc97', '#ff5a4e', '#2fb5f5', '#fff6df'] });
 };
 
+/* Música de fondo según la fase de la partida */
+function useMusic(room: Snapshot | null) {
+  const mood: Mood | null = !room ? null : room.phase === 'lobby' ? 'lobby' : room.players.some((p) => p.escaped && !p.bankrupt) ? 'fast' : 'game';
+  useEffect(() => {
+    music.play(mood);
+    return () => music.play(null);
+  }, [mood]);
+}
+
 type Banner = { key: number; emoji: string; title: string; text?: string };
 
 /* Sonidos y celebraciones: comparan lo que se ve ahora con lo anterior */
@@ -85,18 +96,18 @@ function useGameFx(room: Snapshot | null, meId?: string) {
       if (p.escaped && was && !was.escaped) {
         sfx.fanfare();
         throwConfetti();
-        show({ emoji: '🔓', title: `¡${p.name} escapó!`, text: 'Sus rentas ya pagan su vida. Rumbo a la vía rápida.' });
+        show({ emoji: 'unlock', title: `¡${p.name} escapó!`, text: 'Sus rentas ya pagan su vida. Rumbo a la vía rápida.' });
       }
       if (p.bankrupt && was && !was.bankrupt) {
         sfx.loss();
-        show({ emoji: '💀', title: `${p.name} quebró`, text: 'Queda fuera de la partida.' });
+        show({ emoji: 'skull', title: `${p.name} quebró`, text: 'Queda fuera de la partida.' });
       }
     }
 
     const turnMoved = before.turn !== room.turn || (before.phase !== 'playing' && room.phase === 'playing');
     if (turnMoved && room.phase === 'playing' && room.players[room.turn]?.id === meId) {
       sfx.turn();
-      show({ emoji: mine?.avatar ?? '🎲', title: '¡Te toca!' });
+      show({ emoji: mine?.avatar ?? 'dice', title: '¡Te toca!' });
     }
     if (before.phase !== 'over' && room.phase === 'over') {
       sfx.fanfare();
@@ -125,7 +136,7 @@ function BannerOverlay({ banner }: { banner: Banner | null }) {
           className="pointer-events-none fixed inset-0 z-40 grid place-items-center bg-black/35 p-4 text-center"
         >
           <motion.div initial={{ scale: 0.3, rotate: -8 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 1.3 }} transition={{ type: 'spring', stiffness: 300, damping: 14 }}>
-            <div className="text-7xl">{banner.emoji}</div>
+            <div className="text-7xl"><Glyph id={banner.emoji} size="1.1em" /></div>
             <p className="sticker mt-2 text-[clamp(2.6rem,9vw,5.5rem)] leading-none text-gold">{banner.title}</p>
             {banner.text && <p className="mt-2 text-xl font-semibold text-white [text-shadow:0_2px_0_#000]">{banner.text}</p>}
           </motion.div>
@@ -141,14 +152,14 @@ function Victory({ room, isHost, tv, send }: { room: Snapshot; isHost: boolean; 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`fixed inset-0 z-30 grid place-items-center bg-felt-950/85 p-4 ${tv ? 'overflow-hidden' : 'overflow-auto'}`}>
       <motion.div initial={{ scale: 0.6, y: 40 }} animate={{ scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 14 }} className="w-full max-w-md text-center">
-        <div className="text-7xl">{winner?.avatar ?? '🏆'}</div>
+        <div className="text-7xl"><Glyph id={winner?.avatar ?? 'trophy'} size="1.1em" /></div>
         <p className="sticker mt-1 text-5xl leading-none text-gold">¡{winner?.name ?? 'Nadie'} gana!</p>
         <p className="mt-2 text-lg font-semibold text-cream">{room.message}</p>
         <ol className="panel mt-4 p-3 text-left">
           {ranking.map((p, i) => (
             <li key={p.id} className="flex items-center gap-2 border-b-2 border-cream-dark py-1.5 last:border-0">
               <span className="font-display w-6 text-center">{i + 1}</span>
-              <span aria-hidden className="text-xl">{p.avatar}</span>
+              <span aria-hidden className="text-xl"><Avatar id={p.avatar} /></span>
               <span className="min-w-0 flex-1 truncate font-semibold">{p.name}</span>
               <span className="font-display text-mint-dark">{money(p.netWorth)}</span>
             </li>
@@ -165,6 +176,7 @@ function Victory({ room, isHost, tv, send }: { room: Snapshot; isHost: boolean; 
 
 function TopBar({ room, online, isHost, canSkip, send, boardToggle }: { room: Snapshot; online: boolean; isHost: boolean; canSkip: boolean; send: (type: string) => void; boardToggle?: () => void }) {
   const [muted, setMute] = useState(isMuted());
+  const [songOn, setSongOn] = useState(musicEnabled());
   const screen = useFullscreen();
   return (
     <div className="flex items-center gap-2">
@@ -190,6 +202,12 @@ function TopBar({ room, online, isHost, canSkip, send, boardToggle }: { room: Sn
           {screen.active ? <Minimize size={18} aria-hidden /> : <Maximize size={18} aria-hidden />}
         </button>
       )}
+      <button
+        aria-label={songOn ? 'Quitar la música' : 'Poner música'} title="Música" onClick={() => { setMusicEnabled(!songOn); setSongOn(!songOn); }}
+        className={`grid size-9 cursor-pointer place-items-center rounded-lg bg-black/25 hover:bg-black/40 ${songOn ? '' : 'opacity-60'}`}
+      >
+        {songOn ? <Music2 size={18} aria-hidden /> : <Music size={18} aria-hidden />}
+      </button>
       <button
         aria-label={muted ? 'Activar sonido' : 'Silenciar'} onClick={() => { setMuted(!muted); setMute(!muted); }}
         className="grid size-9 cursor-pointer place-items-center rounded-lg bg-black/25 hover:bg-black/40"
@@ -257,6 +275,7 @@ export function Game({ code }: { code: string }) {
   const me = shown?.players.find((p) => p.id === session.playerId);
   const isHost = !!me && me.id === shown?.adminId;
   const banner = useGameFx(shown, me?.id);
+  useMusic(shown);
   useKeepAwake(!!shown);
   useEffect(() => {
     if (!tv) return;

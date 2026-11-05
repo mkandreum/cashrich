@@ -6,6 +6,7 @@ import type { Motion } from '../lib/hooks';
 import { LOOKS } from '../lib/theme';
 import { Dice } from './Dice';
 import { GameCard } from './GameCard';
+import { Avatar } from './Avatar';
 
 const lookFor = (cell: { name: string; kind: string }, index: number, lane: 'board' | 'via') => {
   if (lane === 'board' && index === 0) return LOOKS.salida;
@@ -31,15 +32,18 @@ function Tile({ cell, index, lane, active, style }: {
   );
 }
 
+const COLS = 10;
+const ROWS = 8;
+
 /* Centro de una casilla, en % del tablero completo */
 function spot(lane: 'board' | 'via', index: number) {
   const pad = 1.1; // igual que el inset de .board-grid, en cqw (el tablero mide 100cqw de ancho)
   const width = 100 - pad * 2;
   const [col, row] = lane === 'board' ? BOARD_POS[index] : VIA_POS[index];
   return {
-    x: pad + ((col - 0.5) / 8) * width,
-    // alto = 75cqw (4:3); se pasa a % de la altura del tablero
-    y: (pad + ((row - 0.5) / 6) * (75 - pad * 2)) / 0.75,
+    x: pad + ((col - 0.5) / COLS) * width,
+    // alto = 80cqw (5:4); se pasa a % de la altura del tablero
+    y: (pad + ((row - 0.5) / ROWS) * (80 - pad * 2)) / 0.8,
   };
 }
 
@@ -63,7 +67,7 @@ function Pawn({ player, index, siblings }: { player: PlayerView & { lane: 'board
         transition={{ duration: 0.28, ease: 'easeOut' }}
         title={player.name}
       >
-        {player.avatar}
+        <Avatar id={player.avatar} />
       </motion.div>
     </motion.div>
   );
@@ -108,7 +112,7 @@ export function Board({ room, motion: mv }: { room: Snapshot; motion: Motion | n
           <Dice value={diceValue || 6} rolling={!!mv?.rolling} idle={!diceValue} size="clamp(40px, 9.5cqw, 120px)" />
           <div className="center-msg">
             <p className="center-turn text-gold">
-              {room.phase === 'over' ? 'Fin de la partida' : current ? `${current.avatar} Turno de ${current.name}` : ''}
+              {room.phase === 'over' ? 'Fin de la partida' : current ? <><Avatar id={current.avatar} /> Turno de {current.name}</> : ''}
             </p>
             <p className="mt-[0.5cqw] text-cream/90">{mv ? (mv.rolling ? 'Rodando el dado…' : `¡Saca un ${mv.value}!`) : room.message}</p>
           </div>

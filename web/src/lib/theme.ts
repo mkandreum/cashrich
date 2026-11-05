@@ -1,7 +1,7 @@
 import {
   ArrowLeftRight, Banknote, Bitcoin, Briefcase, Building2, ChartLine, Coins, Factory, Flag, Gem, HandCoins, Home,
   Landmark, LandPlot, type LucideIcon, Palmtree, PartyPopper, Rocket, Scale, ScrollText, ShieldCheck, ShoppingBag,
-  Sprout, Star, Store, Sun, TrendingUp, Wifi, Zap,
+  Sprout, Star, Store, Sun, TrendingUp, Wifi, Zap, GraduationCap, Receipt, TriangleAlert,
 } from 'lucide-react';
 
 type Look = { tile: string; dark: string; ink: string; icon: LucideIcon; label: string };
@@ -16,6 +16,9 @@ export const LOOKS: Record<string, Look> = {
   sueno: { tile: '#fff0a8', dark: '#c98a0c', ink: '#1d1a33', icon: Star, label: 'Sueño' },
   salida: { tile: '#3ddc97', dark: '#1b9c66', ink: '#10143a', icon: Flag, label: 'Salida' },
   auditoria: { tile: '#7c8bd6', dark: '#4553a3', ink: '#10143a', icon: Scale, label: 'Auditoría' },
+  impuesto: { tile: '#9aa3b5', dark: '#5e6779', ink: '#10143a', icon: Receipt, label: 'Hacienda' },
+  formacion: { tile: '#4fd1c5', dark: '#23958b', ink: '#10143a', icon: GraduationCap, label: 'Formación' },
+  imprevisto: { tile: '#ff9f43', dark: '#c46a12', ink: '#1d1a33', icon: TriangleAlert, label: 'Imprevisto' },
   oportunidad: { tile: '#ff5a4e', dark: '#bf2f25', ink: '#ffffff', icon: Rocket, label: 'Oportunidad' },
 };
 

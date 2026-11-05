@@ -5,6 +5,7 @@ import type { Motion } from '../lib/hooks';
 import { sfx } from '../lib/sound';
 import { Dice } from './Dice';
 import { GameCard } from './GameCard';
+import { Avatar } from './Avatar';
 
 type Send = (type: string, payload?: unknown) => void;
 
@@ -111,7 +112,7 @@ function Waiting({ room, motion }: { room: Snapshot; motion: Motion | null }) {
   const current = room.players[room.turn];
   return (
     <section className="panel-dark flex items-center gap-3 p-3">
-      <span className="grid size-11 flex-none place-items-center rounded-full border-2 border-white text-xl" style={{ background: current?.color }}>{current?.avatar}</span>
+      <span className="grid size-11 flex-none place-items-center rounded-full border-2 border-white text-xl" style={{ background: current?.color }}><Avatar id={current?.avatar} /></span>
       <div className="min-w-0">
         <p className="font-display text-lg leading-tight">Juega {current?.name}</p>
         <p className="text-sm text-cream/80">{motion ? 'Moviendo ficha…' : room.message}</p>

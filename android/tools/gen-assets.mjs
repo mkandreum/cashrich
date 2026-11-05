@@ -30,7 +30,7 @@ val VIA_POS = listOf(${spots(data.viaPos)})
 const ICONS = {
   ArrowLeftRight: 'arrow-left-right', Banknote: 'banknote', Bitcoin: 'bitcoin', BookOpen: 'book-open', Briefcase: 'briefcase',
   Building2: 'building-complex', ChartLine: 'chart-line', Check: 'check', Coins: 'coins', Copy: 'copy', Dices: 'dices', Factory: 'factory',
-  FastForward: 'fast-forward', Flag: 'flag', Gem: 'gem', HandCoins: 'hand-coins', Hourglass: 'hourglass', Home: 'house', Landmark: 'landmark',
+  FastForward: 'fast-forward', Flag: 'flag', Gem: 'gem', HandCoins: 'hand-coins', Hourglass: 'hourglass', Home: 'house', Landmark: 'landmark', Music: 'music', Music2: 'music-2',
   LandPlot: 'land-plot', Lock: 'lock', Palmtree: 'tree-palm', PartyPopper: 'party-popper', Rocket: 'rocket', Scale: 'scale', ScrollText: 'scroll-text',
   Share2: 'share-2', ShieldCheck: 'shield-check', ShoppingBag: 'shopping-bag', Skull: 'skull', Sprout: 'sprout', Star: 'star', Store: 'store', Sun: 'sun',
   TrendingUp: 'trending-up', Tv: 'tv', Unlock: 'lock-open', Users: 'users', Volume2: 'volume-2', VolumeX: 'volume-x', WalletCards: 'wallet-cards',

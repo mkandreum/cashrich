@@ -296,7 +296,7 @@ fun Avatar(player: Player, size: Dp, ring: Color = Color.White) {
         Modifier.size(size).clip(CircleShape).background(parseColor(player.color)).border(2.5.dp, ring, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
-        Text(player.avatar, fontSize = (size.value * 0.52f).sp)
+        Glyph(player.avatar, size * 0.7f)
     }
 }
 
@@ -371,7 +371,7 @@ fun LogList(room: Snapshot, limit: Int = 25) {
         room.log.take(limit).forEach { entry ->
             val who = room.players.find { it.id == entry.who }
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                if (who != null) Text(who.avatar, fontSize = 13.sp)
+                if (who != null) Glyph(who.avatar, 16.dp)
                 T(entry.text, color = C.Cream.copy(alpha = 0.9f), size = 14.sp)
             }
         }
@@ -403,7 +403,7 @@ fun BannerOverlay(banner: Banner?) {
                         Modifier.graphicsLayer { scaleX = pop.value; scaleY = pop.value; rotationZ = (1 - pop.value) * -10f },
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text(banner.emoji, fontSize = 72.sp)
+                        Glyph(banner.emoji, 96.dp)
                         Spacer(Modifier.height(8.dp))
                         Sticker(banner.title, C.Gold, 46.sp, align = TextAlign.Center)
                         if (banner.text != null) {

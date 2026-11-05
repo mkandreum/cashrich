@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { useState, type FormEvent } from 'react';
 import { sfx } from '../lib/sound';
+import { Avatar } from './Avatar';
 
 const AVATARS = ['🐭', '🦊', '🐸', '🐼', '🦁', '🐙', '🐧', '🐷', '🐵', '🦄', '🐯', '🐻'];
 
@@ -48,7 +49,7 @@ export function JoinForm({ title, cta, taken = [], onSubmit }: {
               onClick={() => { sfx.tap(); setPicked(a); }}
               className={`chip aspect-square rounded-full border-[3px] text-2xl ${selected ? 'border-ink bg-gold' : 'border-transparent bg-cream-dark/70'} ${isTaken ? 'opacity-25' : 'cursor-pointer'}`}
             >
-              {a}
+              <Avatar id={a} />
             </motion.button>
           );
         })}

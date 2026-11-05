@@ -2,6 +2,7 @@ import { animate, AnimatePresence, motion, useMotionValue, useTransform } from '
 import { Lock, Rocket, Skull, Unlock } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { freedomPct, money, type PlayerView, type Snapshot } from '../lib/api';
+import { Avatar } from './Avatar';
 
 /* Cifra que corre hasta su valor y suelta un +/- flotante al cambiar */
 export function Money({ value, className }: { value: number; className?: string }) {
@@ -67,7 +68,7 @@ export function PlayerHud({ player, room }: { player: PlayerView; room: Snapshot
     <section className="panel p-3">
       <div className="flex items-center gap-2.5">
         <span className="grid size-10 flex-none place-items-center rounded-full border-[3px] border-ink text-xl" style={{ background: player.color }}>
-          {player.avatar}
+          <Avatar id={player.avatar} />
         </span>
         <div className="min-w-0 flex-1">
           <p className="font-display truncate text-xl leading-none">{player.name}</p>
@@ -104,7 +105,7 @@ export function PlayersList({ room, meId, compact }: { room: Snapshot; meId?: st
           key={p.id}
           className={`panel-dark flex items-center gap-2 transition-transform ${compact ? 'px-2 py-1' : 'px-2.5 py-2'} ${i === room.turn && room.phase === 'playing' ? 'translate-x-1 !border-gold' : ''} ${p.bankrupt ? 'opacity-50' : ''}`}
         >
-          <span className={`grid flex-none place-items-center rounded-full border-2 border-white ${compact ? 'size-7 text-sm' : 'size-9 text-lg'}`} style={{ background: p.color }}>{p.avatar}</span>
+          <span className={`grid flex-none place-items-center rounded-full border-2 border-white ${compact ? 'size-7 text-sm' : 'size-9 text-lg'}`} style={{ background: p.color }}><Avatar id={p.avatar} /></span>
           <div className="min-w-0 flex-1">
             <p className="flex items-center gap-1.5 font-semibold leading-tight">
               <span className="truncate">{p.name}{p.id === meId ? ' (tú)' : ''}</span>
@@ -131,7 +132,7 @@ export function LogList({ room }: { room: Snapshot }) {
         const who = room.players.find((p) => p.id === entry.who);
         return (
           <li key={entry.id} className="flex gap-1.5 border-b border-white/10 pb-1 last:border-0">
-            {who && <span aria-hidden>{who.avatar}</span>}
+            {who && <span aria-hidden><Avatar id={who.avatar} /></span>}
             <span className="text-cream/90">{entry.text}</span>
           </li>
         );

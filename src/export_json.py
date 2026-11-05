@@ -31,6 +31,28 @@ MARKET_EFFECTS = [
 ]
 
 
+# ---- Tablero digital: rejilla 10x8 con 32 casillas y Vía Rápida de 16 (el impreso conserva 24 y 12)
+_KIND = {k: (n, sub) for n, k, sub in TABLERO}
+_KIND.update({
+    "impuesto": ("Hacienda", "Paga el 15 % de tus ingresos del mes"),
+    "formacion": ("Formación", "Paga $1.000: tiras 2 dados 3 turnos"),
+    "imprevisto": ("Imprevisto", "Gasto inesperado (un seguro lo cubre)"),
+})
+_RING = ["cobrar", "peq", "mercado", "gusto", "impuesto", "peq", "grande", "mercado", "peq", "banco",
+         "peq", "formacion", "cobrar", "grande", "mercado", "peq",
+         "imprevisto", "peq", "gusto", "grande", "mercado", "peq", "cobrar", "banco",
+         "grande", "imprevisto", "peq", "gusto", "cobrar", "impuesto", "peq", "cobrar"]
+_LANE = ["cobrar", "peq", "sueno", "mercado", "cobrar", "peq", "sueno", "banco",
+         "cobrar", "peq", "sueno", "mercado", "cobrar", "peq", "sueno", "mercado"]
+_VIA = {k: (n, sub) for n, k, sub in VIA}
+RING_POS = (
+    [(c, 8) for c in range(1, 11)] + [(10, r) for r in range(7, 1, -1)]
+    + [(c, 1) for c in range(10, 0, -1)] + [(1, r) for r in range(2, 8)]
+)
+LANE_POS = [(c, 2) for c in range(2, 10)] + [(c, 3) for c in range(9, 1, -1)]
+assert len(_RING) == len(RING_POS) == 32 and len(_LANE) == len(LANE_POS) == 16
+
+
 def main():
     os.makedirs(WEB, exist_ok=True)
     gustos = []
@@ -61,10 +83,10 @@ def main():
         ],
         "gusto": gustos,
         "dreams": [{"name": n, "cost": c} for n, c in SUENOS],
-        "board": [{"name": n, "kind": k, "sub": s} for n, k, s in TABLERO],
-        "via": [{"name": n, "kind": k, "sub": s} for n, k, s in VIA],
-        "ratoneraPos": RATONERA_POS,
-        "viaPos": VIA_POS,
+        "board": [{"name": "SALIDA" if i == 0 else _KIND[k][0], "kind": k, "sub": _KIND[k][1]} for i, k in enumerate(_RING)],
+        "via": [{"name": _VIA[k][0], "kind": k, "sub": _VIA[k][1]} for k in _LANE],
+        "ratoneraPos": RING_POS,
+        "viaPos": LANE_POS,
     }
 
     path = os.path.join(WEB, "data.json")

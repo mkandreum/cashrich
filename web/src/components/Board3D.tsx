@@ -4,6 +4,7 @@ import type { Motion } from '../lib/hooks';
 import { BoardScene } from '../lib/scene3d';
 import { PhaseChip } from './Economy';
 import { GameCard } from './GameCard';
+import { Avatar } from './Avatar';
 
 /* three.js pesa: se carga aparte, solo cuando empieza la partida */
 export default function Board3D({ room, motion }: { room: Snapshot; motion: Motion | null }) {
@@ -38,7 +39,7 @@ export default function Board3D({ room, motion }: { room: Snapshot; motion: Moti
       <div ref={host} className="absolute inset-0" />
       <div className="board3d-hud">
         <p className="board3d-text font-display text-gold text-[clamp(0.95rem,2.6cqw,1.8rem)] leading-tight">
-          {room.phase === 'over' ? 'Fin de la partida' : current ? `${current.avatar} Turno de ${current.name}` : ''}
+          {room.phase === 'over' ? 'Fin de la partida' : current ? <><Avatar id={current.avatar} /> Turno de {current.name}</> : ''}
         </p>
         <p className="board3d-text text-[clamp(0.75rem,1.7cqw,1.1rem)] font-semibold leading-snug text-cream">
           {motion ? (motion.rolling ? 'Rodando el dado…' : `¡Saca un ${motion.value}!`) : room.message}
