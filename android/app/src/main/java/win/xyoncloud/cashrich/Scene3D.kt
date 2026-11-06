@@ -422,6 +422,9 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
     private var zoom = 1f; private var zoomT = 1f
     private var dieT = 1f
     private var dieValue = 6
+    /** Segundo dado (formación): 0 si solo se tira uno */
+    private var die2Value = 0
+    private var dieX = 0f
     private var diePlaced = 0
     private var dieY = 0.47f
     private var sun = 2.6f; private var sunT = 2.6f
@@ -656,6 +659,7 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
             mv?.rolling == true -> { focusTX = 0f; focusTZ = PLAZA_Z * 0.8f }
             else -> { focusTX = 0f; focusTZ = 0f }
         }
+        die2Value = mv?.other ?: room.dice2
         if (mv?.rolling == true && dieT >= 1f && diePlaced != -mv.value) {
             diePlaced = -mv.value
             dieValue = mv.value
@@ -756,22 +760,26 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
             drawUnit(p, "sphere", trs(0f, 0.52f, 0f, 0.3f, parent = base), pawn.color)
         }
 
-        // Dado: la cara elegida arriba; mientras rueda, voltea en el aire
-        val tumble = 1 - easeOut(dieT)
-        val die = trs(0f, dieY, PLAZA_Z + 0.02f)
-        Matrix.rotateM(die, 0, tumble * 917f, 1f, 0f, 0f)
-        Matrix.rotateM(die, 0, tumble * 516f, 0f, 1f, 0f)
-        Matrix.rotateM(die, 0, tumble * 688f, 0f, 0f, 1f)
-        Matrix.rotateM(die, 0, 28f, 0f, 1f, 0f)
-        when (dieValue) {
-            6 -> Matrix.rotateM(die, 0, 180f, 1f, 0f, 0f)
-            2 -> Matrix.rotateM(die, 0, -90f, 1f, 0f, 0f)
-            5 -> Matrix.rotateM(die, 0, 90f, 1f, 0f, 0f)
-            3 -> Matrix.rotateM(die, 0, 90f, 0f, 0f, 1f)
-            4 -> Matrix.rotateM(die, 0, -90f, 0f, 0f, 1f)
+        fun drawDie(x: Float, y: Float, value: Int, tumble: Float, spin: Float) {
+            val die = trs(x, y, PLAZA_Z + 0.02f)
+            Matrix.rotateM(die, 0, tumble * 917f * spin, 1f, 0f, 0f)
+            Matrix.rotateM(die, 0, tumble * 516f, 0f, 1f, 0f)
+            Matrix.rotateM(die, 0, tumble * 688f * spin, 0f, 0f, 1f)
+            Matrix.rotateM(die, 0, 28f, 0f, 1f, 0f)
+            when (value) {
+                6 -> Matrix.rotateM(die, 0, 180f, 1f, 0f, 0f)
+                2 -> Matrix.rotateM(die, 0, -90f, 1f, 0f, 0f)
+                5 -> Matrix.rotateM(die, 0, 90f, 1f, 0f, 0f)
+                3 -> Matrix.rotateM(die, 0, 90f, 0f, 0f, 1f)
+                4 -> Matrix.rotateM(die, 0, -90f, 0f, 0f, 1f)
+            }
+            mesh(dieBody, die)
+            mesh(diePips, die)
         }
-        mesh(dieBody, die)
-        mesh(diePips, die)
+        // Dado(s): la cara elegida arriba; mientras rueda, voltea en el aire
+        val tumble = 1 - easeOut(dieT)
+        drawDie(dieX, dieY, dieValue, tumble, 1f)
+        if (die2Value > 0) drawDie(-dieX, 0.47f + (dieY - 0.47f) * 0.85f, die2Value, tumble, -0.8f)
     }
 
     private fun perimeter(): (Float) -> Triple<Float, Float, Float> {
@@ -819,6 +827,10 @@ class BoardRenderer(private val context: Context) : GLSurfaceView.Renderer {
             dieY = 0.47f + abs(sin(dieT * PI.toFloat() * 3)) * (1 - dieT) * 2.1f
         } else {
             dieY += (0.47f - dieY) * min(1f, dt * 10)
+        }
+        run {
+            val target = if (die2Value > 0) -0.42f else 0f
+            dieX += (target - dieX) * min(1f, dt * 6)
         }
         sun += (sunT - sun) * min(1f, dt)
         zoom += (zoomT - zoom) * min(1f, dt * 2.4f)

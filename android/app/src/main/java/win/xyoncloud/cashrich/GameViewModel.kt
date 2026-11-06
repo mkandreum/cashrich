@@ -267,11 +267,11 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         staging = true
         Sfx.roll()
         Music.duck(1000)
-        motion = DiceMotion(mover.id, lane, from, 0, next.dice, rolling = true)
+        motion = DiceMotion(mover.id, lane, from, 0, next.dice, rolling = true, other = next.dice2)
         stageJob = viewModelScope.launch {
             delay(ROLL_MS)
             for (step in 0..next.dice) {
-                motion = DiceMotion(mover.id, lane, from, step, next.dice, rolling = false)
+                motion = DiceMotion(mover.id, lane, from, step, next.dice, rolling = false, other = next.dice2)
                 if (step > 0) Sfx.hop()
                 delay(HOP_MS)
             }

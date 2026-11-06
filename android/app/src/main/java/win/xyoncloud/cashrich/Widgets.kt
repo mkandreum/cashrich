@@ -40,6 +40,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -224,12 +226,13 @@ class Floater(val id: Long, val delta: Double)
 
 /** Cifra que corre hasta su valor y suelta un +/- flotante al cambiar */
 @Composable
-fun MoneyText(value: Double, color: Color = C.Ink, size: TextUnit = 20.sp) {
+fun MoneyText(value: Double, color: Color = C.Ink, size: TextUnit = 20.sp, floats: Boolean = true) {
+    val showFloats = floats
     val floats = remember { mutableStateListOf<Floater>() }
     val shown = remember { Animatable(value.toFloat()) }
     LaunchedEffect(value) {
         val delta = value - shown.value
-        if (kotlin.math.abs(delta) >= 1) floats.add(Floater(System.nanoTime(), delta))
+        if (showFloats && kotlin.math.abs(delta) >= 1) floats.add(Floater(System.nanoTime(), delta))
         shown.animateTo(value.toFloat(), tween(700))
     }
     Box {
@@ -326,8 +329,12 @@ fun PlayerHud(player: Player, room: Snapshot) {
 @Composable
 private fun MoneyBox(label: String, value: Double, color: Color, modifier: Modifier) {
     Column(modifier.clip(RoundedCornerShape(12.dp)).background(C.CreamDark.copy(alpha = 0.7f)).padding(horizontal = 12.dp, vertical = 4.dp)) {
-        T(label, color = C.Ink.copy(alpha = 0.65f), size = 12.sp, weight = FontWeight.SemiBold)
-        MoneyText(value, color, 20.sp)
+        // El +/- va en la fila de la etiqueta, a la derecha: así nunca tapa otra cifra
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            T(label, color = C.Ink.copy(alpha = 0.65f), size = 12.sp, weight = FontWeight.SemiBold, maxLines = 1)
+            DeltaText(value)
+        }
+        MoneyText(value, color, 20.sp, floats = false)
     }
 }
 
@@ -419,3 +426,27 @@ fun BannerOverlay(banner: Banner?) {
 
 
 fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier = clickable(MutableInteractionSource(), null, onClick = onClick)
+
+/** Último cambio de una cifra (+/-), visible un momento */
+@Composable
+fun DeltaText(value: Double) {
+    var last by remember { mutableStateOf<Floater?>(null) }
+    var previous by remember { mutableStateOf(value) }
+    LaunchedEffect(value) {
+        val delta = value - previous
+        previous = value
+        if (kotlin.math.abs(delta) < 1) return@LaunchedEffect
+        val f = Floater(System.nanoTime(), delta)
+        last = f
+        kotlinx.coroutines.delay(1600)
+        if (last?.id == f.id) last = null
+    }
+    androidx.compose.animation.AnimatedVisibility(
+        visible = last != null,
+        enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.slideInVertically { it / 2 },
+        exit = androidx.compose.animation.fadeOut(),
+    ) {
+        val f = last ?: return@AnimatedVisibility
+        D((if (f.delta > 0) "+" else "−") + money(kotlin.math.abs(f.delta)), color = if (f.delta > 0) C.MintDark else C.CoralDark, size = 14.sp, maxLines = 1)
+    }
+}

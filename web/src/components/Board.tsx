@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import type { CSSProperties } from 'react';
 import { board as BOARD, ratoneraPos as BOARD_POS, via as VIA, viaPos as VIA_POS } from '../../data.json';
 import type { PlayerView, Snapshot } from '../lib/api';
-import type { Motion } from '../lib/hooks';
+import { rollText, type Motion } from '../lib/hooks';
 import { LOOKS } from '../lib/theme';
 import { Dice } from './Dice';
 import { GameCard } from './GameCard';
@@ -85,6 +85,7 @@ export function Board({ room, motion: mv }: { room: Snapshot; motion: Motion | n
   const activePiece = pieces.find((p) => p.id === (mv?.playerId ?? current?.id));
   const anyoneFree = room.players.some((p) => p.escaped);
   const diceValue = mv?.value ?? room.dice;
+  const otherValue = mv ? mv.other : room.dice2 ?? 0;
   const card = !mv ? room.lastCard : null;
 
   return (
@@ -109,12 +110,15 @@ export function Board({ room, motion: mv }: { room: Snapshot; motion: Motion | n
         </div>
 
         <div className="center">
-          <Dice value={diceValue || 6} rolling={!!mv?.rolling} idle={!diceValue} size="clamp(40px, 9.5cqw, 120px)" />
+          <div className="flex gap-[2cqw]">
+            <Dice value={diceValue || 6} rolling={!!mv?.rolling} idle={!diceValue} size="clamp(40px, 9.5cqw, 120px)" />
+            {otherValue > 0 && <div className={mv?.rolling ? '' : 'opacity-40'}><Dice value={otherValue} rolling={!!mv?.rolling} size="clamp(40px, 9.5cqw, 120px)" /></div>}
+          </div>
           <div className="center-msg">
             <p className="center-turn text-gold">
               {room.phase === 'over' ? 'Fin de la partida' : current ? <><Avatar id={current.avatar} /> Turno de {current.name}</> : ''}
             </p>
-            <p className="mt-[0.5cqw] text-cream/90">{mv ? (mv.rolling ? 'Rodando el dado…' : `¡Saca un ${mv.value}!`) : room.message}</p>
+            <p className="mt-[0.5cqw] text-cream/90">{mv ? rollText(mv) : room.message}</p>
           </div>
           {card && (
             <div className="center-card text-[1cqw]">

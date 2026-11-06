@@ -456,7 +456,7 @@ fun Board3D(room: Snapshot, mv: DiceMotion?, modifier: Modifier = Modifier) {
     AndroidView({ view }, modifier)
 }
 
-private fun narration(room: Snapshot, mv: DiceMotion?) = if (mv != null) (if (mv.rolling) "Rodando el dado…" else "¡Saca un ${mv.value}!") else room.message
+private fun narration(room: Snapshot, mv: DiceMotion?) = if (mv != null) rollText(mv) else room.message
 
 // ------------------------------------------------------------ TV: solo pantalla, sin scroll ni botones
 

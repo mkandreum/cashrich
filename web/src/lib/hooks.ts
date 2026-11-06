@@ -42,6 +42,8 @@ export type Motion = {
   from: number;
   step: number;
   value: number;
+  /* Con formación se tiran dos dados: este es el que se descarta (0 si solo hay uno) */
+  other: number;
   rolling: boolean;
 };
 
@@ -76,7 +78,7 @@ export function useStaged(latest: Snapshot | null) {
     }
     const mover = prev.players[prev.turn];
     const lane = mover.escaped ? 'via' : 'board';
-    const base = { playerId: mover.id, lane, from: lane === 'via' ? mover.vpos : mover.pos, value: latest.dice } as const;
+    const base = { playerId: mover.id, lane, from: lane === 'via' ? mover.vpos : mover.pos, value: latest.dice, other: latest.dice2 ?? 0 } as const;
     r.busy = true;
     sfx.roll();
     setMotion({ ...base, step: 0, rolling: true });
@@ -106,4 +108,10 @@ export function useIsWide() {
     return () => m.removeEventListener('change', update);
   }, []);
   return wide;
+}
+
+/* Texto de la tirada: con dos dados se ve cuál vale */
+export function rollText(m: { value: number; other: number; rolling: boolean }) {
+  if (m.rolling) return m.other ? '¡Rodando los dados!' : '¡Rodando!';
+  return m.other ? `¡${m.value} y ${m.other}! Vale el ${m.value}. Avanza…` : `¡Un ${m.value}! Avanza…`;
 }

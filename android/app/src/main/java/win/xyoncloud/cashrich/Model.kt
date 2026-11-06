@@ -44,7 +44,7 @@ data class Asset(
 )
 
 @Serializable
-data class Debt(val id: String, val balance: Double, val payment: Double, val rate: Double = 0.0, val creditor: String? = null)
+data class Debt(val id: String, val balance: Double, val payment: Double, val rate: Double = 0.0, val creditorId: String? = null, val creditor: String? = null, val fresh: Boolean = false)
 
 @Serializable
 data class Settings(val difficulty: String = "normal", val rounds: Int = 0, val mode: String = "clasico")
@@ -96,6 +96,7 @@ data class Player(
     val vpos: Int = 0,
     val adv: Int = 0,
     val flow: Double = 0.0,
+    val interestIn: Double = 0.0,
     val loanRoom: Double = 0.0,
     val netWorth: Double = 0.0,
     val progress: Double = 0.0,
@@ -115,6 +116,7 @@ data class Snapshot(
     val turn: Int = 0,
     val round: Int = 1,
     val dice: Int = 0,
+    val dice2: Int = 0,
     val frozen: Boolean = false,
     val skipping: Boolean = false,
     val adminId: String? = null,
@@ -137,7 +139,14 @@ data class Snapshot(
 data class Session(val playerId: String, val token: String)
 
 /** Tirada en curso: el dado rueda y luego la ficha avanza casilla a casilla. */
-data class DiceMotion(val playerId: String, val lane: String, val from: Int, val step: Int, val value: Int, val rolling: Boolean)
+data class DiceMotion(val playerId: String, val lane: String, val from: Int, val step: Int, val value: Int, val rolling: Boolean, val other: Int = 0)
+
+/** Texto de la tirada: con formación se tiran dos dados y vale el mejor */
+fun rollText(m: DiceMotion) = when {
+    m.rolling -> if (m.other > 0) "¡Rodando los dados!" else "¡Rodando!"
+    m.other > 0 -> "¡${m.value} y ${m.other}! Vale el ${m.value}. Avanza…"
+    else -> "¡Un ${m.value}! Avanza…"
+}
 
 private val moneyFormat = DecimalFormat("#,##0", DecimalFormatSymbols(Locale.ROOT).apply { groupingSeparator = '.' })
 fun money(value: Double): String {

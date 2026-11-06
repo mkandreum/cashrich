@@ -92,6 +92,7 @@ npm install
 npm run dev      # servidor y cliente con recarga
 npm test         # reglas del juego
 npx tsx tools/simulate.ts 1000 4   # mide duración y equilibrio; solo es una herramienta, el juego no tiene bots
+npx tsx tools/bots.ts 300 4         # bots que usan todas las acciones (tratos, préstamos, embargos) y comprueban las reglas
 ```
 
 ```

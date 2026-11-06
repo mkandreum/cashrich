@@ -22,6 +22,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,8 +61,11 @@ fun ActionPanel(room: Snapshot, me: Player, mv: DiceMotion?, send: Send) {
         !myTurn -> Waiting(room, mv)
         mv != null -> Panel(Modifier.fillMaxWidth().padding(bottom = 6.dp), padding = 16.dp) {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Dice(mv.value, mv.rolling, 96.dp)
-                D(if (mv.rolling) "¡Rodando!" else "¡Un ${mv.value}! Avanza…", size = 24.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
+                    Dice(mv.value, mv.rolling, if (mv.other > 0) 76.dp else 96.dp)
+                    if (mv.other > 0) Box(Modifier.graphicsLayer { alpha = if (mv.rolling) 1f else 0.4f }) { Dice(mv.other, mv.rolling, 76.dp) }
+                }
+                D(rollText(mv), size = 24.sp, align = TextAlign.Center)
             }
         }
         pending?.type == "deal" && pending.card != null -> Deal(pending, pending.card, me, room, send)
@@ -80,8 +87,8 @@ fun ActionPanel(room: Snapshot, me: Player, mv: DiceMotion?, send: Send) {
             val loan = min(me.loanRoom, 50000.0)
             GameCard("bank", Card(name = "Elige una opción", text = "Hoy el crédito está al ${room.economy.rate.roundToInt()}%. Un préstamo acelera, pero sube tus gastos. Donar el 10% de tu sueldo te da dos dados durante tres turnos.")) {
                 Spacer(Modifier.height(12.dp))
-                Chunky("Pedir ${money(loan)}", Modifier.fillMaxWidth(), Tone.Sky, enabled = !room.frozen && me.loanRoom >= 10000) {
-                    send("loan", buildJsonObject { put("amount", loan) })
+                LoanAsk(loan, room.economy.rate, send) { ask ->
+                    Chunky("Pedir ${money(loan)}", Modifier.fillMaxWidth(), Tone.Sky, enabled = !room.frozen && me.loanRoom >= 10000) { ask() }
                 }
                 Chunky("Donar ${money(donation)}", Modifier.fillMaxWidth(), Tone.Mint, enabled = me.cash >= donation) { send("donate", null) }
                 Chunky("Seguir de largo", Modifier.fillMaxWidth(), Tone.Cream) { send("pass", null) }
@@ -95,10 +102,10 @@ fun ActionPanel(room: Snapshot, me: Player, mv: DiceMotion?, send: Send) {
         room.dice == 0 -> Panel(Modifier.fillMaxWidth().padding(bottom = 6.dp), padding = 16.dp) {
             D("¡Te toca!", size = 24.sp)
             T(
-                room.message + (if (me.adv > 0) " Te quedan ${me.adv} tiradas con dos dados." else "") + " Puedes operar en tu cartera antes de tirar.",
+                room.message + (when { me.adv == 1 -> " Te queda 1 tirada con dos dados (vale el mejor)."; me.adv > 1 -> " Te quedan ${me.adv} tiradas con dos dados (vale el mejor)."; else -> "" }) + " Puedes operar en tu cartera antes de tirar.",
                 color = Faded, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
             )
-            Chunky("Tirar el dado", Modifier.fillMaxWidth(), Tone.Coral, giant = true, icon = Lucide.Dices) { send("roll", null) }
+            Chunky(if (me.adv > 0) "Tirar los dados" else "Tirar el dado", Modifier.fillMaxWidth(), Tone.Coral, giant = true, icon = Lucide.Dices) { send("roll", null) }
         }
         else -> Column {
             room.lastCard?.let { GameCard(it.kind, it); Spacer(Modifier.height(10.dp)) }
@@ -317,12 +324,17 @@ fun Wallet(room: Snapshot, me: Player, send: Send) {
             D("Banco", size = 18.sp)
             val notes = (if (!myTurn) " Solo puedes operar en tu turno." else "") + (if (room.frozen) " Crédito congelado este turno." else "")
             T("Ahora el banco presta al ${room.economy.rate.roundToInt()}% mensual, fijo para esa deuda. Te queda crédito por ${money(me.loanRoom)}.$notes", color = C.Ink.copy(alpha = 0.7f), size = 14.sp)
+            var asking by remember { mutableStateOf(0) }
             Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(10000, 50000, 100000).forEach { amount ->
                     Chunky("+${amount / 1000}k", Modifier.weight(1f), Tone.Sky, small = true, enabled = myTurn && !room.frozen && me.loanRoom >= amount) {
-                        send("loan", buildJsonObject { put("amount", amount) })
+                        asking = amount
                     }
                 }
+            }
+            if (asking > 0 && myTurn) LoanConfirm(asking.toDouble(), room.economy.rate, onCancel = { asking = 0 }) {
+                send("loan", buildJsonObject { put("amount", asking) })
+                asking = 0
             }
             me.debts.forEach { d ->
                 Row(
@@ -331,14 +343,44 @@ fun Wallet(room: Snapshot, me: Player, send: Send) {
                 ) {
                     Column(Modifier.weight(1f)) {
                         T("Deuda de ${money(d.balance)}" + (d.creditor?.let { " con $it" } ?: ""), weight = FontWeight.SemiBold)
-                        T("Al ${d.rate.roundToInt()}%: pagas ${money(d.payment)}/mes", color = C.Ink.copy(alpha = 0.65f), size = 12.sp)
+                        T("Al ${d.rate.roundToInt()}%: pagas ${money(d.payment)}/mes" + (if (d.fresh) " · liquidarla ya cuesta ${money(d.balance + d.payment)}" else ""), color = C.Ink.copy(alpha = 0.65f), size = 12.sp)
                     }
-                    Chunky("Liquidar", tone = Tone.Mint, small = true, enabled = myTurn && me.cash >= d.balance) {
+                    Chunky("Liquidar", tone = Tone.Mint, small = true, enabled = myTurn && me.cash >= d.balance + (if (d.fresh) d.payment else 0.0)) {
                         send("repay", buildJsonObject { put("debtId", d.id) })
                     }
                 }
             }
         }
+        val owed = room.players.filter { !it.bankrupt }.flatMap { p -> p.debts.filter { it.creditorId == me.id }.map { p.name to it } }
+        if (owed.isNotEmpty()) Panel(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+            T("Te deben dinero: cobras ${money(me.interestIn)}/mes de intereses", weight = FontWeight.SemiBold)
+            owed.forEach { (who, d) -> T("$who: ${money(d.balance)} al ${d.rate.roundToInt()}% → ${money(d.payment)}/mes", color = C.Ink.copy(alpha = 0.7f), size = 12.sp) }
+        }
         if (me.note.isNotEmpty()) T("${me.profession}: ${me.note}", color = C.Cream.copy(alpha = 0.8f), size = 14.sp, modifier = Modifier.padding(horizontal = 4.dp))
+    }
+}
+
+/** Botón de préstamo que antes de pedir enseña lo que costará y pide confirmación */
+@Composable
+private fun LoanAsk(amount: Double, rate: Double, send: Send, button: @Composable (ask: () -> Unit) -> Unit) {
+    var asking by remember { mutableStateOf(false) }
+    if (!asking) button { asking = true }
+    else LoanConfirm(amount, rate, onCancel = { asking = false }) {
+        send("loan", buildJsonObject { put("amount", amount) })
+        asking = false
+    }
+}
+
+@Composable
+private fun LoanConfirm(amount: Double, rate: Double, onCancel: () -> Unit, onConfirm: () -> Unit) {
+    Column(
+        Modifier.fillMaxWidth().padding(top = 8.dp).clip(RoundedCornerShape(12.dp)).background(C.Gold.copy(alpha = 0.3f)).padding(10.dp),
+    ) {
+        T("¿Pedir ${money(amount)} al ${rate.roundToInt()}%?", weight = FontWeight.SemiBold)
+        T("Pagarás ${money(Math.round(amount * rate / 100).toDouble())} cada mes hasta liquidarla. Aunque la devuelvas antes, el primer mes de interés se paga.", color = C.Ink.copy(alpha = 0.75f), size = 13.sp)
+        Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Chunky("Cancelar", Modifier.weight(1f), Tone.Cream, small = true) { onCancel() }
+            Chunky("Sí, pedir", Modifier.weight(1f), Tone.Sky, small = true) { onConfirm() }
+        }
     }
 }

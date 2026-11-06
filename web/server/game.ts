@@ -10,7 +10,8 @@ export const MIN_PLAYERS = 2;
 export type Asset = {
   id: string; name: string; tag: string; cost: number; baseCost: number; down: number; mortgage: number; flow: number; kind: string; upgraded: boolean;
 };
-export type Debt = { id: string; balance: number; payment: number; rate: number; creditorId?: string; creditor?: string };
+/* fresh: aún no ha pasado un mes; si la liquidas ya, pagas igualmente el interés de ese primer mes */
+export type Debt = { id: string; balance: number; payment: number; rate: number; creditorId?: string; creditor?: string; fresh?: boolean };
 export type Offer = { id: string; kind: 'sell' | 'buy' | 'lend' | 'borrow'; fromId: string; toId: string; assetId?: string; assetName?: string; amount: number; rate?: number; expires: number };
 type Ledger = { assetId: string; name: string; round: number; paid: number; received: number; rent: number; open: boolean };
 type Totals = { rent: number; taxes: number; gustos: number; bills: number; interest: number };
@@ -33,7 +34,7 @@ type Player = {
 
 export type GameState = {
   code: string; tv: boolean; phase: 'lobby' | 'playing' | 'over';
-  players: Player[]; turn: number; round: number; dice: number; frozen: boolean; skipping: boolean;
+  players: Player[]; turn: number; round: number; dice: number; dice2: number; frozen: boolean; skipping: boolean;
   pending: Pending | null; lastCard: Card | null; message: string; winner: string | null;
   log: { id: number; text: string; who: string | null }[]; seq: number;
   settings: Settings; economy: Economy;
@@ -121,7 +122,7 @@ const freshDecks = (rng: () => number = Math.random): GameState['decks'] => ({
 
 export function newGame(code: string, tv = false): GameState {
   return {
-    code, tv, phase: 'lobby', players: [], turn: 0, round: 1, dice: 0,
+    code, tv, phase: 'lobby', players: [], turn: 0, round: 1, dice: 0, dice2: 0,
     frozen: false, skipping: false, pending: null, lastCard: null,
     message: 'Esperando jugadores…', winner: null, log: [], seq: 0, decks: freshDecks(),
     settings: defaultSettings(), economy: newEconomy(), offers: [], challenge: null,
@@ -154,6 +155,7 @@ export function createEngine(S: GameState, board?: Leaderboard) {
   S.settings.mode ??= 'clasico';
   S.offers ??= [];
   S.challenge ??= null;
+  S.dice2 ??= 0;
   S.players.forEach((p) => { p.ledger ??= []; p.totals ??= emptyTotals(); p.series ??= []; p.dreamPaid ??= 0; p.startCash ??= p.cash; });
 
   /* En el reto semanal todo azar sale de la semana: mismas cartas, economía y dados para todas las mesas. */
@@ -176,6 +178,8 @@ export function createEngine(S: GameState, board?: Leaderboard) {
   };
   const interest = () => Math.max(4, PHASES[S.economy.phase].rate + rules().rate);
   const lentBy = (p: Player) => S.players.reduce((sum, x) => sum + x.debts.filter((d) => d.creditorId === p.id).reduce((a, d) => a + d.balance, 0), 0);
+  /* Intereses que te pagan cada mes quienes te deben dinero */
+  const interestIn = (p: Player) => S.players.reduce((sum, x) => sum + (x.bankrupt ? 0 : x.debts.filter((d) => d.creditorId === p.id).reduce((a, d) => a + d.payment, 0)), 0);
   const netWorth = (p: Player) => p.cash + p.assets.reduce((a, x) => a + equityOf(S, x), 0) - debtOf(p) + lentBy(p);
 
   /* Bonos de cartera: 3 activos de un sector, +20 % en ese sector; uno de cada sector, +10 % en todo */
@@ -249,7 +253,7 @@ export function createEngine(S: GameState, board?: Leaderboard) {
     const rate = interest();
     const payment = Math.round((amount * rate) / 100);
     p.cash += amount;
-    p.debts.push({ id: uid(), balance: amount, payment, rate });
+    p.debts.push({ id: uid(), balance: amount, payment, rate, fresh: true });
     p.expenses += payment;
     log(`${p.name} pidió un préstamo de ${clp(amount)} al ${rate}% (+${clp(payment)}/mes)`, p.id);
     return amount;
@@ -258,13 +262,16 @@ export function createEngine(S: GameState, board?: Leaderboard) {
   function repay(p: Player, debtId: string): Result {
     const d = p.debts.find((x) => x.id === debtId);
     if (!d) return { error: 'Esa deuda ya no existe' };
-    if (p.cash < d.balance) return { error: 'No te alcanza para pagarla' };
-    p.cash -= d.balance;
+    // Devolverla antes de que pase un mes no sale gratis: se paga el interés de ese mes
+    const extra = d.fresh ? d.payment : 0;
+    if (p.cash < d.balance + extra) return { error: 'No te alcanza para pagarla' };
+    p.cash -= d.balance + extra;
     p.expenses -= d.payment;
     p.debts = p.debts.filter((x) => x.id !== debtId);
+    p.totals.interest += extra;
     const lender = S.players.find((x) => x.id === d.creditorId);
-    if (lender) lender.cash += d.balance;
-    log(`${p.name} pagó una deuda de ${clp(d.balance)}`, p.id);
+    if (lender) lender.cash += d.balance + extra;
+    log(`${p.name} pagó una deuda de ${clp(d.balance)}${extra ? ` (+${clp(extra)} del interés del primer mes)` : ''}`, p.id);
     checkEscape(p);
     return {};
   }
@@ -288,18 +295,26 @@ export function createEngine(S: GameState, board?: Leaderboard) {
     log(S.message, alive[0].id);
   }
 
+  /* Si no puedes pagar (cuotas, facturas, impuestos), primero te embargan:
+     el banco se queda un activo, cancela su hipoteca y te abona el resto.
+     Solo si ya no te queda nada que embargar te da un crédito de urgencia. */
   function ensureSolvent(p: Player) {
     if (p.cash >= 0) return;
-    takeLoan(p, Math.ceil(-p.cash / 1000) * 1000);
+    const net = (a: Asset) => Math.max(Math.round(a.down * 0.5), Math.round(marketValue(S, a) * 0.7) - a.mortgage);
     while (p.cash < 0 && p.assets.length) {
-      const a = p.assets.slice().sort((x, y) => x.cost - y.cost)[0];
-      const price = Math.max(Math.round(a.down * 0.5), Math.round(marketValue(S, a) * 0.7) - a.mortgage);
+      const short = -p.cash;
+      const byNet = p.assets.slice().sort((x, y) => net(x) - net(y));
+      // El más barato que cubra el agujero; si ninguno basta, el que más vale
+      const a = byNet.find((x) => net(x) >= short) ?? byNet[byNet.length - 1];
+      const price = net(a);
       p.cash += price;
       closeLedger(p, a.id, price);
       p.assets = p.assets.filter((x) => x.id !== a.id);
+      S.offers = S.offers.filter((o) => o.assetId !== a.id);
       recompute(p);
-      log(`${p.name} vendió ${a.name} de emergencia al 50% (${clp(price)})`, p.id);
+      log(`🔨 Embargo: ${p.name} no podía pagar ${clp(short)} y el banco se queda ${a.name}. Le abona ${clp(price)} tras cancelar la hipoteca.`, p.id);
     }
+    if (p.cash < 0) takeLoan(p, Math.ceil(-p.cash / 1000) * 1000);
     if (p.cash < 0) {
       p.bankrupt = true;
       log(`${p.name} quedó en bancarrota y sale del juego.`, p.id);
@@ -344,6 +359,7 @@ export function createEngine(S: GameState, board?: Leaderboard) {
       p.totals.rent += a.flow;
     });
     p.debts.forEach((d) => {
+      d.fresh = false;
       p.totals.interest += d.payment;
       const lender = S.players.find((x) => x.id === d.creditorId && !x.bankrupt);
       if (lender) lender.cash += d.payment;
@@ -380,6 +396,7 @@ export function createEngine(S: GameState, board?: Leaderboard) {
     const p = current();
     if (!p) return;
     S.dice = 0;
+    S.dice2 = 0;
     S.pending = null;
     S.lastCard = null;
     S.skipping = false;
@@ -410,6 +427,7 @@ export function createEngine(S: GameState, board?: Leaderboard) {
     S.frozen = false;
     S.lastCard = null;
     S.dice = 0;
+    S.dice2 = 0;
     if (S.phase !== 'playing') return;
     let guard = 0;
     do {
@@ -430,9 +448,13 @@ export function createEngine(S: GameState, board?: Leaderboard) {
   function roll(p: Player) {
     const stream = `dice${S.players.indexOf(p)}`;
     let d = 1 + Math.floor(rand(stream) * 6);
+    S.dice2 = 0;
     if (p.adv > 0) {
+      // Formación: tira dos dados y se queda el mejor; el otro se enseña también
       p.adv--;
-      d = Math.max(d, 1 + Math.floor(rand(stream) * 6));
+      const e = 1 + Math.floor(rand(stream) * 6);
+      S.dice2 = Math.min(d, e);
+      d = Math.max(d, e);
     }
     S.dice = d;
     if (p.escaped) {
@@ -568,7 +590,9 @@ export function createEngine(S: GameState, board?: Leaderboard) {
       say(`${c.name}: todos pagan ${clp(e.amount)}.`);
       S.players.filter((x) => !x.bankrupt).forEach((x) => { x.cash -= e.amount; ensureSolvent(x); });
     } else if (e.type === 'inflation') {
-      p.expenses = Math.ceil((p.expenses * (1 + e.pct / 100)) / 100) * 100;
+      // Sube el coste de vida, no las cuotas de las deudas (si no, el recargo se quedaba al liquidarlas)
+      const payments = p.debts.reduce((sum, d) => sum + d.payment, 0);
+      p.expenses = Math.ceil(((p.expenses - payments) * (1 + e.pct / 100)) / 100) * 100 + payments;
       say(`${c.name}: los gastos de ${p.name} suben a ${clp(p.expenses)}/mes.`);
     } else if (e.type === 'skip') {
       p.skip = 1;
@@ -619,7 +643,7 @@ export function createEngine(S: GameState, board?: Leaderboard) {
 
   function reset(): Result {
     Object.assign(S, {
-      phase: 'lobby', turn: 0, round: 1, winner: null, log: [], pending: null, lastCard: null, dice: 0,
+      phase: 'lobby', turn: 0, round: 1, winner: null, log: [], pending: null, lastCard: null, dice: 0, dice2: 0,
       frozen: false, skipping: false, message: 'Nueva partida: esperando jugadores…', decks: freshDecks(), economy: newEconomy(), offers: [], challenge: null,
     });
     return {};
@@ -772,7 +796,7 @@ export function createEngine(S: GameState, board?: Leaderboard) {
       const payment = Math.round((o.amount * o.rate!) / 100);
       lender.cash -= o.amount;
       borrower.cash += o.amount;
-      borrower.debts.push({ id: uid(), balance: o.amount, payment, rate: o.rate!, creditorId: lender.id, creditor: lender.name });
+      borrower.debts.push({ id: uid(), balance: o.amount, payment, rate: o.rate!, creditorId: lender.id, creditor: lender.name, fresh: true });
       borrower.expenses += payment;
       S.offers = S.offers.filter((x) => x.id !== o.id);
       log(`🤝 ${lender.name} presta ${clp(o.amount)} a ${borrower.name} al ${o.rate}% (+${clp(payment)}/mes).`, borrower.id);
@@ -997,7 +1021,7 @@ export function createEngine(S: GameState, board?: Leaderboard) {
 
     snapshot() {
       return {
-        code: S.code, tv: S.tv, phase: S.phase, turn: S.turn, round: S.round, dice: S.dice, frozen: S.frozen,
+        code: S.code, tv: S.tv, phase: S.phase, turn: S.turn, round: S.round, dice: S.dice, dice2: S.dice2, frozen: S.frozen,
         skipping: S.skipping, adminId: S.players[0]?.id ?? null, settings: S.settings,
         economy: {
           phase: S.economy.phase, label: PHASES[S.economy.phase].label, hint: PHASES[S.economy.phase].hint, rate: interest(),
@@ -1018,7 +1042,7 @@ export function createEngine(S: GameState, board?: Leaderboard) {
           netWorth: netWorth(p), progress: Math.round(progress(p) * 10) / 10, synergies: synergies(p).labels, freedom: Math.min(1, p.expenses > 0 ? p.passive / (p.expenses * rules().goal) : 0),
           goal: Math.round(p.expenses * rules().goal),
           escaped: p.escaped, bankrupt: p.bankrupt, pos: p.pos, vpos: p.vpos, skip: p.skip, adv: p.adv,
-          turns: p.turns, flow: flowOf(p), loanRoom: loanRoom(p),
+          turns: p.turns, flow: flowOf(p) + interestIn(p), interestIn: interestIn(p), loanRoom: loanRoom(p),
         })),
       };
     },

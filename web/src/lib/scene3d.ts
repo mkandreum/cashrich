@@ -143,6 +143,10 @@ export class BoardScene {
   private cityRoot = new THREE.Group();
   private laneGate!: THREE.MeshStandardMaterial;
   private die!: THREE.Mesh;
+  /* Segundo dado: solo aparece con formación (se tiran dos y vale el mejor) */
+  private die2!: THREE.Mesh;
+  private die2To = new THREE.Quaternion();
+  private dieX = 0;
   private dieFrom = new THREE.Quaternion();
   private dieTo = new THREE.Quaternion();
   private dieT = 1;
@@ -540,6 +544,9 @@ export class BoardScene {
     this.die.position.set(0, 0.47, PLAZA_Z + 0.02);
     this.die.rotation.y = 0.5;
     this.scene.add(this.die);
+    this.die2 = this.die.clone();
+    this.die2.visible = false;
+    this.scene.add(this.die2);
   }
 
   // ------------------------------------------------------------ estado de la partida
@@ -606,6 +613,10 @@ export class BoardScene {
     this.laneGate.emissiveIntensity = room.players.some((p) => p.escaped) ? 0.8 : 0.15;
 
     // Dado
+    const other = motion ? motion.other : room.dice2 ?? 0;
+    this.die2.visible = other > 0;
+    this.dieX = other > 0 ? -0.42 : 0;
+    if (other > 0) this.die2To.copy(this.faceUp(other));
     if (motion?.rolling && this.dieT >= 1 && this.diePlaced !== -motion.value) {
       this.diePlaced = -motion.value;
       this.dieFrom.copy(this.die.quaternion);
@@ -614,6 +625,7 @@ export class BoardScene {
     } else if (!motion && room.dice && this.diePlaced !== room.dice) {
       this.diePlaced = room.dice;
       this.die.quaternion.copy(this.faceUp(room.dice));
+      this.die2.quaternion.copy(this.die2To);
     } else if (!motion && !room.dice) {
       this.diePlaced = 0;
     }
@@ -730,9 +742,15 @@ export class BoardScene {
       const tumble = new THREE.Quaternion().setFromEuler(new THREE.Euler((1 - easeOut(t)) * 16, (1 - easeOut(t)) * 9, (1 - easeOut(t)) * 12));
       this.die.quaternion.copy(this.dieTo).premultiply(tumble);
       this.die.position.y = 0.47 + Math.abs(Math.sin(t * Math.PI * 3)) * (1 - t) * 2.1;
+      const tumble2 = new THREE.Quaternion().setFromEuler(new THREE.Euler((1 - easeOut(t)) * -13, (1 - easeOut(t)) * 11, (1 - easeOut(t)) * -15));
+      this.die2.quaternion.copy(this.die2To).premultiply(tumble2);
+      this.die2.position.y = 0.47 + Math.abs(Math.sin(t * Math.PI * 3 + 0.9)) * (1 - t) * 1.8;
     } else {
       this.die.position.y += (0.47 - this.die.position.y) * Math.min(1, dt * 10);
+      this.die2.position.y += (0.47 - this.die2.position.y) * Math.min(1, dt * 10);
     }
+    this.die.position.x += (this.dieX - this.die.position.x) * Math.min(1, dt * 6);
+    this.die2.position.x = -this.dieX;
 
     this.sun.intensity += (this.sunTarget - this.sun.intensity) * Math.min(1, dt);
     this.zoom += (this.zoomTarget - this.zoom) * Math.min(1, dt * 2.4);

@@ -4,44 +4,56 @@ import { useEffect, useRef, useState } from 'react';
 import { freedomPct, money, type PlayerView, type Snapshot } from '../lib/api';
 import { Avatar } from './Avatar';
 
-/* Cifra que corre hasta su valor y suelta un +/- flotante al cambiar */
-export function Money({ value, className }: { value: number; className?: string }) {
-  const shown = useMotionValue(value);
-  const text = useTransform(shown, (v) => money(v));
+/* Guarda los últimos cambios de una cifra para enseñarlos un momento como +/- */
+function useDeltas(value: number) {
   const previous = useRef(value);
   const [floats, setFloats] = useState<{ id: number; delta: number }[]>([]);
-
   useEffect(() => {
     const delta = value - previous.current;
     previous.current = value;
     if (!delta) return;
-    const controls = animate(shown, value, { duration: 0.7, ease: 'easeOut' });
     const id = Date.now() + Math.random();
-    setFloats((f) => [...f, { id, delta }]);
-    const timer = setTimeout(() => setFloats((f) => f.filter((x) => x.id !== id)), 1400);
-    return () => { controls.stop(); clearTimeout(timer); };
-  }, [value, shown]);
+    setFloats((f) => [...f.slice(-1), { id, delta }]);
+    const timer = setTimeout(() => setFloats((f) => f.filter((x) => x.id !== id)), 1600);
+    return () => clearTimeout(timer);
+  }, [value]);
+  return floats;
+}
 
+/* El +/- se pinta en su propio hueco (la fila de la etiqueta), nunca encima de otra cifra */
+export function Delta({ value, className }: { value: number; className?: string }) {
+  const floats = useDeltas(value);
+  const last = floats[floats.length - 1];
   return (
-    <span className={`relative inline-block ${className ?? ''}`}>
-      <motion.span>{text}</motion.span>
-      <AnimatePresence>
-        {floats.map((f) => (
+    <span className={`relative inline-flex min-w-0 justify-end ${className ?? ''}`} aria-live="polite">
+      <AnimatePresence mode="popLayout">
+        {last && (
           <motion.span
-            key={f.id}
-            initial={{ y: 0, opacity: 0, scale: 0.7 }}
-            animate={{ y: -36, opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.9 }}
-            className="sticker pointer-events-none absolute left-full top-0 z-20 ml-2 text-lg whitespace-nowrap"
-            style={{ color: f.delta > 0 ? 'var(--color-mint)' : 'var(--color-coral)' }}
+            key={last.id}
+            initial={{ y: 6, opacity: 0, scale: 0.8 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -6, opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            className="font-display text-sm leading-none whitespace-nowrap"
+            style={{ color: last.delta > 0 ? 'var(--color-mint-dark)' : 'var(--color-coral-dark)' }}
           >
-            {f.delta > 0 ? '+' : '−'}{money(Math.abs(f.delta))}
+            {last.delta > 0 ? '+' : '−'}{money(Math.abs(last.delta))}
           </motion.span>
-        ))}
+        )}
       </AnimatePresence>
     </span>
   );
+}
+
+/* Cifra que corre hasta su valor */
+export function Money({ value, className }: { value: number; className?: string }) {
+  const shown = useMotionValue(value);
+  const text = useTransform(shown, (v) => money(v));
+  useEffect(() => {
+    const controls = animate(shown, value, { duration: 0.7, ease: 'easeOut' });
+    return () => controls.stop();
+  }, [value, shown]);
+  return <motion.span className={className}>{text}</motion.span>;
 }
 
 export function FreedomMeter({ player }: { player: PlayerView }) {
@@ -78,12 +90,18 @@ export function PlayerHud({ player, room }: { player: PlayerView; room: Snapshot
       </div>
       <div className="mt-2 grid grid-cols-2 gap-2">
         <div className="rounded-xl bg-cream-dark/70 px-3 py-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink/65">Efectivo</p>
-          <Money value={player.cash} className="font-display text-xl leading-tight" />
+          <div className="flex items-center justify-between gap-1">
+            <p className="truncate text-xs font-semibold uppercase tracking-wide text-ink/65">Efectivo</p>
+            <Delta value={player.cash} />
+          </div>
+          <Money value={player.cash} className="block font-display text-xl leading-tight" />
         </div>
         <div className="rounded-xl bg-cream-dark/70 px-3 py-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink/65">Flujo / mes</p>
-          <Money value={player.flow} className={`font-display text-xl leading-tight ${player.flow < 0 ? 'text-coral-dark' : 'text-mint-dark'}`} />
+          <div className="flex items-center justify-between gap-1">
+            <p className="truncate text-xs font-semibold uppercase tracking-wide text-ink/65">Flujo / mes</p>
+            <Delta value={player.flow} />
+          </div>
+          <Money value={player.flow} className={`block font-display text-xl leading-tight ${player.flow < 0 ? 'text-coral-dark' : 'text-mint-dark'}`} />
         </div>
       </div>
       <div className="mt-2"><FreedomMeter player={player} /></div>

@@ -303,10 +303,56 @@ describe('Modos, tratos e informe', () => {
     const debt = borrower.debts[0];
     expect(debt.creditorId).toBe(lender.id);
     lender.cash = 0;
+    // Devolverlo en el mismo mes cuesta el interés de ese mes (+1000)
     borrower.cash = 10000;
+    expect(engine.act(creds[borrower.id], 'repay', { debtId: debt.id }).error).toBeTruthy();
+    borrower.cash = 11000;
     expect(engine.act(creds[borrower.id], 'repay', { debtId: debt.id })).toEqual({});
-    expect(lender.cash).toBe(10000);
+    expect(lender.cash).toBe(11000);
+    expect(borrower.cash).toBe(0);
     expect(borrower.expenses).toBe(before);
+  });
+
+  it('el prestamista ve en su flujo los intereses que cobra', () => {
+    const { engine, creds } = table(2);
+    const S = engine.state;
+    const borrower = S.players[S.turn];
+    const lender = S.players[(S.turn + 1) % 2];
+    lender.cash = 10000;
+    const flowBefore = engine.snapshot().players.find((x) => x.id === lender.id)!.flow;
+    engine.act(creds[lender.id], 'offer', { kind: 'lend', toId: borrower.id, amount: 10000, rate: 10 });
+    engine.act(creds[borrower.id], 'acceptOffer', { offerId: S.offers[0].id });
+    const view = engine.snapshot().players.find((x) => x.id === lender.id)!;
+    expect(view.interestIn).toBe(1000);
+    expect(view.flow).toBe(flowBefore + 1000);
+  });
+
+  it('si no puedes pagar, te embargan un activo antes de darte más crédito', () => {
+    const { engine, creds } = table(2);
+    const S = engine.state;
+    const next = S.players[(S.turn + 1) % 2];
+    next.assets.push({ id: 'A9', name: 'Nave', tag: 'COMERCIAL', cost: 100000, baseCost: 100000, down: 60000, mortgage: 40000, flow: 0, kind: 'big', upgraded: false });
+    next.cash = -(next.salary + next.passive - next.expenses) - 2000; // tras cobrar el mes le faltan 2000
+    S.dice = 1;
+    S.pending = null;
+    expect(engine.act(creds[S.players[S.turn].id], 'end')).toEqual({});
+    expect(next.assets).toHaveLength(0);
+    expect(next.debts).toHaveLength(0);
+    expect(next.bankrupt).toBe(false);
+    expect(next.cash).toBeGreaterThanOrEqual(0);
+    expect(S.log.some((l) => l.text.includes('Embargo'))).toBe(true);
+  });
+
+  it('con formación se tiran dos dados, vale el mejor y se ven los dos', () => {
+    const { engine, creds } = table(2);
+    const S = engine.state;
+    const p = S.players[S.turn];
+    p.adv = 1;
+    expect(engine.act(creds[p.id], 'roll')).toEqual({});
+    expect(S.dice2).toBeGreaterThanOrEqual(1);
+    expect(S.dice2).toBeLessThanOrEqual(S.dice);
+    expect(engine.snapshot().dice2).toBe(S.dice2);
+    expect(p.adv).toBe(0);
   });
 
   it('el informe final da la mejor y la peor operación', () => {

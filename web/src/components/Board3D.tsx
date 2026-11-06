@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { Snapshot } from '../lib/api';
-import type { Motion } from '../lib/hooks';
+import { rollText, type Motion } from '../lib/hooks';
 import { BoardScene } from '../lib/scene3d';
 import { PhaseChip } from './Economy';
 import { GameCard } from './GameCard';
@@ -42,7 +42,7 @@ export default function Board3D({ room, motion }: { room: Snapshot; motion: Moti
           {room.phase === 'over' ? 'Fin de la partida' : current ? <><Avatar id={current.avatar} /> Turno de {current.name}</> : ''}
         </p>
         <p className="board3d-text text-[clamp(0.75rem,1.7cqw,1.1rem)] font-semibold leading-snug text-cream">
-          {motion ? (motion.rolling ? 'Rodando el dado…' : `¡Saca un ${motion.value}!`) : room.message}
+          {motion ? rollText(motion) : room.message}
         </p>
         <div className="board3d-chip mt-1"><PhaseChip room={room} /></div>
       </div>

@@ -1,7 +1,7 @@
 import { Dices, Gavel, Hourglass } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { money, type Pending, type PlayerView, type Snapshot } from '../lib/api';
-import type { Motion } from '../lib/hooks';
+import { rollText, type Motion } from '../lib/hooks';
 import { sfx } from '../lib/sound';
 import { Dice } from './Dice';
 import { GameCard } from './GameCard';
@@ -140,8 +140,11 @@ export function ActionPanel({ room, me, motion, send }: { room: Snapshot; me: Pl
   if (motion) {
     return (
       <section className="panel flex flex-col items-center gap-3 p-5 text-center">
-        <Dice value={motion.value} rolling={motion.rolling} size="96px" />
-        <p className="font-display text-2xl">{motion.rolling ? '¡Rodando!' : `¡Un ${motion.value}! Avanza…`}</p>
+        <div className="flex gap-8">
+          <Dice value={motion.value} rolling={motion.rolling} size={motion.other ? '76px' : '96px'} />
+          {motion.other > 0 && <div className={motion.rolling ? '' : 'opacity-40'}><Dice value={motion.other} rolling={motion.rolling} size="76px" /></div>}
+        </div>
+        <p className="font-display text-2xl">{rollText(motion)}</p>
       </section>
     );
   }
@@ -168,9 +171,7 @@ export function ActionPanel({ room, me, motion, send }: { room: Snapshot; me: Pl
     return (
       <GameCard deck="bank" card={{ name: 'Elige una opción', text: `Hoy el crédito está al ${room.economy.rate}%. Un préstamo acelera, pero sube tus gastos. Donar el 10% de tu sueldo te da dos dados durante tres turnos.` }}>
         <div className="mt-3 grid gap-2">
-          <button className="btn btn-sky" disabled={room.frozen || me.loanRoom < 10000} onClick={() => send('loan', { amount: Math.min(me.loanRoom, 50000) })}>
-            Pedir {money(Math.min(me.loanRoom, 50000))}
-          </button>
+          <BankLoan room={room} me={me} send={send} />
           <button className="btn btn-mint" disabled={me.cash < donation} onClick={() => send('donate')}>Donar {money(donation)}</button>
           <button className="btn btn-cream" onClick={() => send('pass')}>Seguir de largo</button>
         </div>
@@ -192,9 +193,9 @@ export function ActionPanel({ room, me, motion, send }: { room: Snapshot; me: Pl
     return (
       <section className="panel p-4">
         <p className="font-display text-2xl leading-none">¡Te toca!</p>
-        <p className="mb-3 mt-1 text-ink/75">{room.message}{me.adv > 0 ? ` Te quedan ${me.adv} tiradas con dos dados.` : ''} Puedes operar en tu cartera antes de tirar.</p>
+        <p className="mb-3 mt-1 text-ink/75">{room.message}{me.adv > 0 ? (me.adv === 1 ? ' Te queda 1 tirada con dos dados (vale el mejor).' : ` Te quedan ${me.adv} tiradas con dos dados (vale el mejor).`) : ''} Puedes operar en tu cartera antes de tirar.</p>
         <button className="btn btn-coral btn-giant" onClick={() => { sfx.tap(); send('roll'); }}>
-          <Dices size={32} aria-hidden /> Tirar el dado
+          <Dices size={32} aria-hidden /> {me.adv > 0 ? 'Tirar los dados' : 'Tirar el dado'}
         </button>
       </section>
     );
@@ -208,6 +209,30 @@ export function ActionPanel({ room, me, motion, send }: { room: Snapshot; me: Pl
         {!card && <p className="mb-2 font-semibold leading-snug">{room.message}</p>}
         <button className="btn btn-coral w-full" onClick={() => send('end')}>Terminar turno</button>
       </section>
+    </div>
+  );
+}
+
+/* Pedir préstamo en la casilla Banco: primero dice cuánto costará y pide confirmación */
+function BankLoan({ room, me, send }: { room: Snapshot; me: PlayerView; send: (type: string, payload?: unknown) => void }) {
+  const [asking, setAsking] = useState(false);
+  const amount = Math.min(me.loanRoom, 50000);
+  const payment = Math.round((amount * room.economy.rate) / 100);
+  if (!asking) {
+    return (
+      <button className="btn btn-sky" disabled={room.frozen || me.loanRoom < 10000} onClick={() => setAsking(true)}>
+        Pedir {money(amount)}
+      </button>
+    );
+  }
+  return (
+    <div className="rounded-xl border-2 border-ink bg-gold/30 p-2.5 text-left" role="alertdialog" aria-label="Confirmar préstamo">
+      <p className="font-semibold leading-snug">¿Pedir {money(amount)} al {room.economy.rate}%?</p>
+      <p className="text-sm text-ink/75">Pagarás {money(payment)} cada mes hasta liquidarla. Aunque la devuelvas antes, el primer mes de interés se paga.</p>
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <button className="btn btn-small btn-cream" onClick={() => setAsking(false)}>Cancelar</button>
+        <button className="btn btn-small btn-sky" autoFocus onClick={() => { send('loan', { amount }); setAsking(false); }}>Sí, pedir</button>
+      </div>
     </div>
   );
 }
