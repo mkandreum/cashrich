@@ -181,7 +181,7 @@ function Victory({ room, isHost, tv, send, meId }: { room: Snapshot; isHost: boo
         <LeaderboardPanel room={room} />
         {isHost
           ? <button className="btn btn-coral btn-giant mt-4" onClick={() => send('reset')}>Otra partida</button>
-          : <p className="mt-4 font-semibold text-cream/85">El admin puede empezar otra partida.</p>}
+          : <p className="mt-4 font-semibold text-cream/85">Cualquiera de la mesa puede empezar otra partida.</p>}
         {!tv && <button className="mt-1 block w-full font-semibold underline underline-offset-4" onClick={() => navigate('/')}>Salir</button>}
       </motion.div>
     </motion.div>
@@ -294,7 +294,8 @@ export function Game({ code }: { code: string }) {
   const toastTimer = useRef<number | undefined>(undefined);
 
   const me = shown?.players.find((p) => p.id === session.playerId);
-  const isHost = !!me && me.id === shown?.adminId;
+  // Ya no hay administrador: cualquiera sentado a la mesa la maneja
+  const isHost = !!me;
   const banner = useGameFx(shown, me?.id);
   useMusic(shown);
   useKeepAwake(!!shown);

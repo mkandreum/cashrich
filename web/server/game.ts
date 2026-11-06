@@ -649,7 +649,7 @@ export function createEngine(S: GameState, board?: Leaderboard) {
     return {};
   }
 
-  function adminAction(type: string, payload: any): Result {
+  function tableAction(p: Player, type: string, payload: any): Result {
     if (type === 'start') return start();
     if (type === 'settings') {
       if (S.phase !== 'lobby') return { error: 'La partida ya empezó' };
@@ -668,7 +668,8 @@ export function createEngine(S: GameState, board?: Leaderboard) {
     if (type === 'reset') return reset();
     if (type === 'skipTurn') {
       if (S.phase !== 'playing') return { error: 'No hay partida en curso' };
-      log(`El admin saltó el turno de ${current()?.name}.`);
+      if (current()?.id === p.id) return { error: 'Es tu turno: termínalo tú' };
+      log(`${p.name} saltó el turno de ${current()?.name}.`);
       endTurn();
       return {};
     }
@@ -1008,9 +1009,8 @@ export function createEngine(S: GameState, board?: Leaderboard) {
       const p = S.players.find((x) => x.id === credentials.playerId);
       if (!p || p.token !== credentials.token) return { error: 'Sesión inválida' };
       if (ADMIN_ACTIONS.includes(type)) {
-        // El primero en sentarse a la mesa es quien la maneja.
-        if (S.players[0].id !== p.id) return { error: 'Solo el admin puede hacer esto' };
-        const out = adminAction(type, payload ?? {});
+        // Sin administrador: cualquiera sentado a la mesa la maneja
+        const out = tableAction(p, type, payload ?? {});
         recordChallenge();
         return out;
       }
@@ -1022,7 +1022,7 @@ export function createEngine(S: GameState, board?: Leaderboard) {
     snapshot() {
       return {
         code: S.code, tv: S.tv, phase: S.phase, turn: S.turn, round: S.round, dice: S.dice, dice2: S.dice2, frozen: S.frozen,
-        skipping: S.skipping, adminId: S.players[0]?.id ?? null, settings: S.settings,
+        skipping: S.skipping, adminId: S.players[0]?.id ?? null, /* solo para APK antiguas: ya no hay administrador */ settings: S.settings,
         economy: {
           phase: S.economy.phase, label: PHASES[S.economy.phase].label, hint: PHASES[S.economy.phase].hint, rate: interest(),
           idx: S.economy.idx, hist: S.economy.hist,

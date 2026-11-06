@@ -169,15 +169,19 @@ describe('FLUJO LIBRE', () => {
         for (const p of engine.state.players) expect(json).not.toContain(p.token);
   });
 
-  it('el primero en entrar es el admin y solo él maneja la mesa', () => {
+  it('no hay administrador: cualquiera sentado maneja la mesa, pero no sin sesión', () => {
     const { engine, creds } = table();
-    const [admin, other] = engine.state.players;
-    expect(engine.snapshot().adminId).toBe(admin.id);
-    expect(engine.act(creds[other.id], 'reset').error).toBeTruthy();
-    expect(engine.act({ playerId: admin.id, token: 'falso' }, 'reset').error).toBeTruthy();
-    expect(engine.state.phase).toBe('playing');
-    expect(engine.act(creds[admin.id], 'reset')).toEqual({});
-    expect(engine.state.phase).toBe('lobby');
+    const S = engine.state;
+    const waiting = S.players[(S.turn + 1) % 2];
+    expect(engine.act({ playerId: waiting.id, token: 'falso' }, 'reset').error).toBeTruthy();
+    expect(engine.act(creds[S.players[S.turn].id], 'skipTurn').error).toBeTruthy();
+    expect(engine.act(creds[waiting.id], 'skipTurn')).toEqual({});
+    expect(S.players[S.turn].id).toBe(waiting.id);
+    const last = S.players[S.players.length - 1];
+    expect(engine.act(creds[last.id], 'reset')).toEqual({});
+    expect(S.phase).toBe('lobby');
+    expect(engine.act(creds[last.id], 'settings', { mode: 'clasico' })).toEqual({});
+    expect(engine.act(creds[last.id], 'start')).toEqual({});
   });
 
   it('una carta de Gusto cobra el gasto en vez de regalarlo', () => {

@@ -111,7 +111,6 @@ export function Lobby({ room, meId, isHost, tv, send }: {
                   >
                     <span className="grid size-16 place-items-center rounded-full border-[3px] border-white text-4xl" style={{ background: p.color }}><Avatar id={p.avatar} /></span>
                     <span className="mt-1 max-w-full truncate font-semibold">{p.name}{p.id === meId ? ' (tú)' : ''}</span>
-                    {p.id === room.adminId && <span className="text-xs font-semibold text-gold">Admin</span>}
                     {isHost && p.id !== meId && (
                       <button
                         aria-label={`Sacar a ${p.name}`} onClick={() => send('kick', { playerId: p.id })}
@@ -137,9 +136,9 @@ export function Lobby({ room, meId, isHost, tv, send }: {
             </div>
           ) : (
             <p className="panel-dark p-4 text-center text-lg font-semibold">
-              {room.adminId
-                ? `Esperando a que ${room.players.find((p) => p.id === room.adminId)?.name} empiece desde su móvil…`
-                : 'Quien entre primero será el admin y empezará la partida.'}
+              {room.players.length
+                ? 'Cualquiera de la mesa puede empezar la partida desde su móvil…'
+                : 'Entrad desde el móvil con el código: cualquiera podrá empezar la partida.'}
             </p>
           )}
         </section>

@@ -276,7 +276,6 @@ private fun LobbyPlayers(vm: GameViewModel, room: Snapshot, isAdmin: Boolean, co
                         ) {
                             Avatar(p, 54.dp)
                             T(p.name + if (p.id == vm.session?.playerId) " (tú)" else "", color = C.Cream, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(top = 3.dp))
-                            if (p.id == room.adminId) T("Admin", color = C.Gold, size = 12.sp, weight = FontWeight.SemiBold)
                             if (isAdmin && p.id != vm.session?.playerId) {
                                 T("Sacar", color = C.Coral, size = 13.sp, weight = FontWeight.SemiBold, modifier = Modifier.clickableNoRipple {
                                     vm.send("kick", buildJsonObject { put("playerId", p.id) })
@@ -317,9 +316,8 @@ private fun Lobby(vm: GameViewModel, room: Snapshot, tv: Boolean) {
                         LobbyPlayers(vm, room, false, 3)
                     }
                     PanelDark(Modifier.fillMaxWidth()) {
-                        val admin = room.players.find { it.id == room.adminId }
                         T(
-                            if (admin != null) "Esperando a que ${admin.name} empiece desde su móvil…" else "Quien entre primero será el admin y empezará la partida.",
+                            if (room.players.isNotEmpty()) "Cualquiera de la mesa puede empezar la partida desde su móvil…" else "Entrad desde el móvil con el código: cualquiera podrá empezar la partida.",
                             color = C.Cream, size = 18.sp, weight = FontWeight.SemiBold, align = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -328,7 +326,8 @@ private fun Lobby(vm: GameViewModel, room: Snapshot, tv: Boolean) {
         }
         return
     }
-    val isAdmin = vm.session?.playerId == room.adminId
+    // Ya no hay administrador: cualquiera sentado a la mesa la maneja
+    val isAdmin = vm.session?.playerId != null && room.players.any { it.id == vm.session?.playerId }
     BackHandler { vm.leave() }
     Column(
         Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -359,7 +358,7 @@ private fun Lobby(vm: GameViewModel, room: Snapshot, tv: Boolean) {
             val needed = (if (room.settings.mode == "reto") 1 else 2) - room.players.size
             Chunky(if (needed > 0) "Falta $needed jugador" else "¡Empezar partida!", Modifier.fillMaxWidth(), Tone.Coral, giant = true, enabled = needed <= 0) { vm.send("start") }
         } else {
-            PanelDark(Modifier.fillMaxWidth()) { T("Esperando a que el admin empiece…", color = C.Cream, size = 18.sp, weight = FontWeight.SemiBold, align = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
+            PanelDark(Modifier.fillMaxWidth()) { T("Esperando a que alguien de la mesa empiece…", color = C.Cream, size = 18.sp, weight = FontWeight.SemiBold, align = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
         }
         T("Salir de la mesa", color = C.Cream, weight = FontWeight.SemiBold, modifier = Modifier.padding(8.dp).clickableNoRipple { vm.leave() })
     }
@@ -582,7 +581,7 @@ private fun BoardBox(room: Snapshot, mv: DiceMotion?, modifier: Modifier) {
 private fun TopBar(vm: GameViewModel, room: Snapshot, toggleBoard: (() -> Unit)?, onLeave: () -> Unit) {
     var muted by remember { mutableStateOf(Sfx.muted) }
     var song by remember { mutableStateOf(Music.enabled) }
-    val isAdmin = vm.session?.playerId == room.adminId
+    val isAdmin = vm.session?.playerId != null && room.players.any { it.id == vm.session?.playerId }
     val canSkip = isAdmin && room.phase == "playing" && room.current?.id != vm.session?.playerId
     @Composable
     fun Button(icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
@@ -630,9 +629,9 @@ private fun Victory(vm: GameViewModel, room: Snapshot, tv: Boolean) {
             if (entry != null && !tv) ReportPanel(room, entry)
             LeaderboardPanel(room)
             when {
-                tv -> T("El admin puede empezar otra partida desde su móvil. Atrás dos veces abre una mesa nueva.", color = C.Cream.copy(alpha = 0.85f), weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
-                vm.session?.playerId == room.adminId -> Chunky("Otra partida", Modifier.fillMaxWidth().padding(top = 10.dp), Tone.Coral, giant = true) { vm.send("reset") }
-                else -> T("El admin puede empezar otra partida.", color = C.Cream.copy(alpha = 0.85f), weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
+                tv -> T("Cualquiera de la mesa puede empezar otra partida desde su móvil. Atrás dos veces abre una mesa nueva.", color = C.Cream.copy(alpha = 0.85f), weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
+                room.players.any { it.id == vm.session?.playerId } -> Chunky("Otra partida", Modifier.fillMaxWidth().padding(top = 10.dp), Tone.Coral, giant = true) { vm.send("reset") }
+                else -> T("Cualquiera de la mesa puede empezar otra partida.", color = C.Cream.copy(alpha = 0.85f), weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
             }
             if (!tv) T("Salir", color = C.Cream, weight = FontWeight.SemiBold, modifier = Modifier.padding(8.dp).clickableNoRipple { vm.leave() })
         }

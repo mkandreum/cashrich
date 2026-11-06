@@ -55,7 +55,7 @@ Web en **https://cashrich.xyoncloud.win**, una APK de móvil y una APK de TV.
 | **Con TV** | Abre la APK de TV (o `/tv` en un navegador). Crea la mesa sola y muestra un QR. Cada jugador lo escanea y juega en la web desde su móvil, sin instalar nada. La TV no se toca. |
 | **Sin TV** | Web o APK de móvil: crea una mesa y comparte el enlace o el código. Cada uno ve el tablero 3D y sus controles. |
 
-El primero en entrar a la mesa es el **admin**: elige dificultad y duración, empieza la partida, puede saltar a quien no responda y lanzar otra partida.
+No hay administrador: cualquiera sentado a la mesa elige el modo y la duración, empieza la partida, puede saltar el turno de quien no responda y lanzar otra partida.
 
 ### Reglas de la versión digital
 
